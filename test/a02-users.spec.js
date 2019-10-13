@@ -96,6 +96,10 @@ describe('Users', () => {
           'Password expected to be omited'
         )
         assert.property(result.body, 'token', 'Token property exists.')
+        assert.property(result.body.user, 'type')
+        assert.property(result.body.user, 'apiTokenIsValid')
+        assert.property(result.body.user, '_id')
+        assert.property(result.body.user, 'bchAddr')
       } catch (err) {
         console.log(
           'Error authenticating test user: ' + JSON.stringify(err, null, 2)

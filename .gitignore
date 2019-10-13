@@ -61,3 +61,7 @@ docs
 coverage
 database/
 system-user-*.json
+
+# Specific to jwt-bch-api
+wallet.json
+bkup-wallet.json

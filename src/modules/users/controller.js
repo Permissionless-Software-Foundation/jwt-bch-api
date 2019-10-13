@@ -1,4 +1,8 @@
 const User = require('../../models/users')
+const GetAddress = require('slp-cli-wallet/src/commands/get-address')
+
+const getAddress = new GetAddress()
+const walletFilename = `${__dirname}/../../../wallet.json`
 
 /**
  * @api {post} /users Create a new user
@@ -38,11 +42,15 @@ const User = require('../../models/users')
  *       "error": "Unprocessable Entity"
  *     }
  */
+//
 async function createUser (ctx) {
   const user = new User(ctx.request.body.user)
 
   // Enforce default value of 'user'
   user.type = 'user'
+
+  // Generate a BCH address for this user.
+  user.bchAddr = await getAddress.getAddress(walletFilename)
 
   try {
     await user.save()
