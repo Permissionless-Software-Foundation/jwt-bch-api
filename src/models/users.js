@@ -7,7 +7,12 @@ const User = new mongoose.Schema({
   type: { type: String, default: 'user' },
   name: { type: String },
   username: { type: String, required: true, unique: true },
-  password: { type: String, required: true }
+  password: { type: String, required: true },
+  apiToken: { type: String },
+  bchAddr: { type: String },
+  satBal: { type: Number }, // balance of BCH in satoshis
+  credit: { type: Number }, // account credit in USD.
+  apiTokenIsValid: { type: Boolean, default: false }
 })
 
 User.pre('save', function preSave (next) {
