@@ -13,12 +13,12 @@ module.exports.routes = [
   {
     method: 'GET',
     route: '/',
-    handlers: [validator.ensureUser, user.getUsers]
+    handlers: [validator.ensureAdmin, user.getUsers]
   },
   {
     method: 'GET',
     route: '/:id',
-    handlers: [validator.ensureUser, user.getUser]
+    handlers: [validator.ensureTargetUserOrAdmin, user.getUser]
   },
   {
     method: 'PUT',

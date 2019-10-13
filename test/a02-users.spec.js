@@ -187,9 +187,30 @@ describe('Users', () => {
       }
     })
 
-    it('should fetch all users', async () => {
+    it('should throw 401 if non-admin getting users', async () => {
       const { token } = context
 
+      try {
+        const options = {
+          method: 'GET',
+          uri: `${LOCALHOST}/users`,
+          resolveWithFullResponse: true,
+          json: true,
+          headers: {
+            Accept: 'application/json',
+            Authorization: `Bearer ${token}`
+          }
+        }
+
+        await rp(options)
+        assert.equal(true, false, 'Unexpected behavior')
+      } catch (err) {
+        // console.log(`err: `, err)
+        assert.equal(err.statusCode, 401)
+      }
+    })
+
+    it('should get all users if admin', async () => {
       const options = {
         method: 'GET',
         uri: `${LOCALHOST}/users`,
@@ -197,16 +218,15 @@ describe('Users', () => {
         json: true,
         headers: {
           Accept: 'application/json',
-          Authorization: `Bearer ${token}`
+          Authorization: `Bearer ${context.adminJWT}`
         }
       }
 
       const result = await rp(options)
       const users = result.body.users
-      // console.log(`users: ${util.inspect(users)}`)
+      // console.log(`users: ${JSON.stringify(users, null, 2)}`)
 
-      assert.hasAnyKeys(users[0], ['type', '_id', 'username'])
-      assert.isNumber(users.length)
+      assert.isArray(users)
     })
   })
 
@@ -231,7 +251,7 @@ describe('Users', () => {
       }
     })
 
-    it("should throw 404 if user doesn't exist", async () => {
+    it('should throw 401 if non-admin getting other user', async () => {
       const { token } = context
 
       try {
@@ -249,7 +269,7 @@ describe('Users', () => {
         await rp(options)
         assert.equal(true, false, 'Unexpected behavior')
       } catch (err) {
-        assert.equal(err.statusCode, 404)
+        assert.equal(err.statusCode, 401)
       }
     })
 
