@@ -11,8 +11,8 @@ const User = new mongoose.Schema({
   apiToken: { type: String },
   bchAddr: { type: String }, // BCH address.
   hdIndex: { type: Number }, // Index in the hd wallet associated with this user.
-  satBal: { type: Number }, // balance of BCH in satoshis
-  credit: { type: Number }, // account credit in USD.
+  satBal: { type: Number, default: 0 }, // balance of BCH in satoshis
+  credit: { type: Number, default: 0 }, // account credit in USD.
   apiTokenIsValid: { type: Boolean, default: false }
 })
 

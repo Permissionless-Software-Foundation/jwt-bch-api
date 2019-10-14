@@ -100,6 +100,7 @@ describe('Users', () => {
         assert.property(result.body.user, 'apiTokenIsValid')
         assert.property(result.body.user, '_id')
         assert.property(result.body.user, 'bchAddr')
+        assert.property(result.body.user, 'hdIndex')
       } catch (err) {
         console.log(
           'Error authenticating test user: ' + JSON.stringify(err, null, 2)

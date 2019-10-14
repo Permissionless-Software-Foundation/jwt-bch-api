@@ -1,6 +1,7 @@
 const User = require('../../models/users')
-const GetAddress = require('slp-cli-wallet/src/commands/get-address')
+const util = require('../../lib/utils/json-files')
 
+const GetAddress = require('slp-cli-wallet/src/commands/get-address')
 const getAddress = new GetAddress()
 const walletFilename = `${__dirname}/../../../wallet.json`
 
@@ -48,6 +49,11 @@ async function createUser (ctx) {
 
   // Enforce default value of 'user'
   user.type = 'user'
+
+  // Get the HD index for the next wallet address.
+  const walletData = await util.readJSON(walletFilename)
+  // console.log(`walletData: ${JSON.stringify(walletData, null, 2)}`)
+  user.hdIndex = walletData.nextAddress
 
   // Generate a BCH address for this user.
   user.bchAddr = await getAddress.getAddress(walletFilename)
