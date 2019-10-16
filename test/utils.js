@@ -69,7 +69,11 @@ async function loginTestUser () {
     const retObj = {
       token: result.body.token,
       user: result.body.user.username,
-      id: result.body.user._id.toString()
+      id: result.body.user._id.toString(),
+      apiToken: result.body.user.apiToken,
+      bchAddr: result.body.user.bchAddr,
+      credit: result.body.user.credit,
+      satBal: result.body.user.satBal
     }
 
     return retObj

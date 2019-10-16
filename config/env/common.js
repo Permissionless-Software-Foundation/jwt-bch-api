@@ -5,5 +5,7 @@
 
 module.exports = {
   port: process.env.PORT || 5001,
-  monthlyPrice: 0.05 // Monthly price for API access in USD.
+  monthlyPrice: 0.05, // Monthly price for API access in USD.
+  jwtExpiration: '30 days' // Sets the default expiration time for newly issued JWT tokens.
+  // jwtExpiration: '2 seconds'
 }

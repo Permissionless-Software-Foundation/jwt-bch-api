@@ -149,4 +149,50 @@ describe('API Token', () => {
       // to true.
     })
   })
+
+  describe('GET /isvalid/:jwt', () => {
+    it('should validate a valid jwt token', async () => {
+      // Get updated user data on the test user.
+      // Assumption: this test if run after the apitoken/new tests, so the
+      // test user has a new, valid API token attached to their model.
+      context.testUser = await testUtils.loginTestUser()
+      // console.log(`testUser: ${JSON.stringify(context.testUser, null, 2)}`)
+
+      const token = context.testUser.apiToken
+
+      const options = {
+        method: 'GET',
+        uri: `${LOCALHOST}/apitoken/isvalid/${token}`,
+        resolveWithFullResponse: true,
+        json: true,
+        headers: {
+          Accept: 'application/json'
+          // Authorization: `Bearer ${token}`
+        }
+      }
+
+      const result = await rp(options)
+
+      assert.equal(result.body, true)
+    })
+
+    it('should return false for expired token', async () => {
+      const expiredToken = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjVkYTc5NWI2ODAwZWNlNjIyMDkwYTU4ZSIsImlhdCI6MTU3MTI2MzkyNywiZXhwIjoxNTcxMjYzOTI5fQ.AGPnVHnZDDKqz8a6sp8YK9OUzdv0xHIbCur3EpTrSBo'
+
+      const options = {
+        method: 'GET',
+        uri: `${LOCALHOST}/apitoken/isvalid/${expiredToken}`,
+        resolveWithFullResponse: true,
+        json: true,
+        headers: {
+          Accept: 'application/json'
+          // Authorization: `Bearer ${token}`
+        }
+      }
+
+      const result = await rp(options)
+
+      assert.equal(result.body, false)
+    })
+  })
 })

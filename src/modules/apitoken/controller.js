@@ -1,6 +1,7 @@
 const User = require('../../models/users')
 const apiTokenLib = require('../../lib/api-token')
 const config = require('../../../config')
+const jwt = require('jsonwebtoken')
 
 /**
  * @api {get} /apitoken/:id Get BCH payment address for user by user id
@@ -96,7 +97,35 @@ async function newToken (ctx, next) {
   }
 }
 
+// Expects an API JWT token as input and returns true or false if it's valid.
+function isValid (ctx, next) {
+  // false by default.
+  let result = false
+
+  try {
+    const token = ctx.params.jwt
+    // console.log(`token: ${token}`)
+
+    // Validate the JWT token.
+    const decoded = jwt.verify(token, config.token)
+    // console.log(`decoded: ${JSON.stringify(decoded, null, 2)}`)
+
+    // If an error was not thrown, then the token is valid.
+    result = true
+
+    ctx.body = result
+  } catch (err) {
+    // If any error is thrown, return false, indicating the JWT token is invalid.
+    ctx.body = result
+  }
+
+  if (next) {
+    return next()
+  }
+}
+
 module.exports = {
   getBchAddr,
-  newToken
+  newToken,
+  isValid
 }

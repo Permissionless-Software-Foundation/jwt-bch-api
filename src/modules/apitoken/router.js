@@ -14,13 +14,13 @@ module.exports.routes = [
     method: 'POST',
     route: '/new',
     handlers: [validator.ensureUser, apiToken.newToken]
-  }
-  /*
+  },
   {
     method: 'GET',
-    route: '/',
-    handlers: [validator.ensureAdmin, user.getUsers]
-  },
+    route: '/isvalid/:jwt',
+    handlers: [apiToken.isValid]
+  }
+  /*
   {
     method: 'GET',
     route: '/:id',
