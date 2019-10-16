@@ -68,6 +68,9 @@ async function newToken (ctx, next) {
     // Deduct credit
     user.credit = user.credit - config.monthlyPrice
 
+    // Set the isvalid flag
+    user.apiTokenIsValid = true
+
     // Update the user data in the DB.
     try {
       await user.save()
