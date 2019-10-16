@@ -4,5 +4,6 @@
 */
 
 module.exports = {
-  port: process.env.PORT || 5001
+  port: process.env.PORT || 5001,
+  monthlyPrice: 0.05 // Monthly price for API access in USD.
 }

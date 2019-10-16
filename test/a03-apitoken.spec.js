@@ -27,7 +27,7 @@ describe('API Token', () => {
     // console.log(`admin: ${JSON.stringify(admin, null, 2)}`)
   })
 
-  describe('GET /users/:id', () => {
+  describe('GET /apitoken/bchaddr/:id', () => {
     it('should not fetch user if auth header is missing', async () => {
       try {
         const id = context.testUser.id
@@ -94,6 +94,56 @@ describe('API Token', () => {
 
       assert.property(user, 'bchAddr', 'Has BCH address')
       assert.notProperty(user, 'password', 'Does not have password property')
+    })
+  })
+
+  describe('POST /apitoken/new', () => {
+    it('should throw error if credit is too low', async () => {
+      try {
+        const token = context.testUser.token
+
+        const options = {
+          method: 'POST',
+          uri: `${LOCALHOST}/apitoken/new`,
+          resolveWithFullResponse: true,
+          json: true,
+          headers: {
+            Accept: 'application/json',
+            Authorization: `Bearer ${token}`
+          }
+        }
+
+        await rp(options)
+        assert.equal(true, false, 'Unexpected behavior')
+      } catch (err) {
+        assert.equal(err.statusCode, 402)
+      }
+    })
+
+    it('should get a new API key', async () => {
+      // const id = context.testUser.id
+      const token = context.testUser.token
+
+      // Update the credit level of the test user.
+      context.testUser.credit = 100.00
+      await testUtils.updateUser(context.testUser)
+
+      const options = {
+        method: 'POST',
+        uri: `${LOCALHOST}/apitoken/new`,
+        resolveWithFullResponse: true,
+        json: true,
+        headers: {
+          Accept: 'application/json',
+          Authorization: `Bearer ${token}`
+        }
+      }
+
+      const result = await rp(options)
+      const apiToken = result.body
+      // console.log(`apiToken: ${util.inspect(apiToken)}`)
+
+      assert.isString(apiToken)
     })
   })
 })

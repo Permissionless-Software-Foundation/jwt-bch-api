@@ -42,7 +42,9 @@ async function createUser (userObj) {
 
     return retObj
   } catch (err) {
-    console.log('Error in utils.js/createUser(): ' + JSON.stringify(err, null, 2))
+    console.log(
+      'Error in utils.js/createUser(): ' + JSON.stringify(err, null, 2)
+    )
     throw err
   }
 }
@@ -72,7 +74,9 @@ async function loginTestUser () {
 
     return retObj
   } catch (err) {
-    console.log('Error authenticating test user: ' + JSON.stringify(err, null, 2))
+    console.log(
+      'Error authenticating test user: ' + JSON.stringify(err, null, 2)
+    )
     throw err
   }
 }
@@ -106,7 +110,9 @@ async function loginAdminUser () {
 
     return retObj
   } catch (err) {
-    console.log('Error authenticating test admin user: ' + JSON.stringify(err, null, 2))
+    console.log(
+      'Error authenticating test admin user: ' + JSON.stringify(err, null, 2)
+    )
     throw err
   }
 }
@@ -128,10 +134,38 @@ async function getAdminJWT () {
   }
 }
 
+async function updateUser (userObj) {
+  try {
+    // console.log(`userObj: ${JSON.stringify(userObj, null, 2)}`)
+
+    const options = {
+      method: 'PUT',
+      uri: `${LOCALHOST}/users/${userObj.id}`,
+      resolveWithFullResponse: true,
+      json: true,
+      headers: {
+        Accept: 'application/json',
+        Authorization: `Bearer ${userObj.token}`
+      },
+      body: {
+        user: userObj
+      }
+    }
+
+    await rp(options)
+
+    return true
+  } catch (err) {
+    console.log('Error in utils.js/updateUser(): ', err)
+    throw err
+  }
+}
+
 module.exports = {
   cleanDb,
   createUser,
   loginTestUser,
   loginAdminUser,
-  getAdminJWT
+  getAdminJWT,
+  updateUser
 }

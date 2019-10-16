@@ -9,13 +9,13 @@ module.exports.routes = [
     method: 'GET',
     route: '/bchaddr/:id',
     handlers: [validator.ensureUser, apiToken.getBchAddr]
-  }
-  /*
+  },
   {
     method: 'POST',
-    route: '/',
-    handlers: [user.createUser]
-  },
+    route: '/new',
+    handlers: [validator.ensureUser, apiToken.newToken]
+  }
+  /*
   {
     method: 'GET',
     route: '/',
