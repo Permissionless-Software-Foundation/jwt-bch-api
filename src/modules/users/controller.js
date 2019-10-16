@@ -134,6 +134,7 @@ async function getUsers (ctx) {
  *
  * @apiUse TokenError
  */
+
 async function getUser (ctx, next) {
   try {
     const user = await User.findById(ctx.params.id, '-password')
