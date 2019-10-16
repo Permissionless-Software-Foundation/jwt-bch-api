@@ -1,15 +1,21 @@
 const validator = require('../../middleware/validators')
-const user = require('./controller')
+const apiToken = require('./controller')
 
 // export const baseUrl = '/users'
-module.exports.baseUrl = '/users'
+module.exports.baseUrl = '/apitoken'
 
 module.exports.routes = [
   {
-    method: 'POST',
-    route: '/',
-    handlers: [user.createUser]
+    method: 'GET',
+    route: '/bchaddr/:id',
+    handlers: [validator.ensureUser, apiToken.getBchAddr]
   },
+  {
+    method: 'POST',
+    route: '/new',
+    handlers: [validator.ensureUser, apiToken.newToken]
+  }
+  /*
   {
     method: 'GET',
     route: '/',
@@ -30,4 +36,5 @@ module.exports.routes = [
     route: '/:id',
     handlers: [validator.ensureTargetUserOrAdmin, user.getUser, user.deleteUser]
   }
+  */
 ]
