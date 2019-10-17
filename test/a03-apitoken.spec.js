@@ -154,7 +154,7 @@ describe('API Token', () => {
       const apiToken = result.body
       // console.log(`apiToken: ${util.inspect(apiToken)}`)
 
-      assert.isString(apiToken)
+      assert.isString(apiToken.apiToken)
 
       // TODO: Get user data and assert that the apiTokenIsValid flag is set
       // to true.

@@ -93,7 +93,7 @@ class ApiTokenController {
       }
 
       // Return the BCH address
-      ctx.body = user.apiToken
+      ctx.body = { apiToken: user.apiToken }
     } catch (err) {
       if (err === 404 || err.name === 'CastError') {
         ctx.throw(404)
