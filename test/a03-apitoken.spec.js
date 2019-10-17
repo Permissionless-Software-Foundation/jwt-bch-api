@@ -2,15 +2,22 @@ const testUtils = require('./utils')
 const rp = require('request-promise')
 const assert = require('chai').assert
 const config = require('../config')
+const sinon = require('sinon')
 
 const util = require('util')
 util.inspect.defaultOptions = { depth: 1 }
 
 const LOCALHOST = `http://localhost:${config.port}`
 
+// Instantiate the Class for testing with mocking
+const ApiTokenController = require('../src/modules/apitoken/controller')
+const apiTokenController = new ApiTokenController()
+
 const context = {}
 
 describe('API Token', () => {
+  let sandbox
+
   before(async () => {
     context.testUser = await testUtils.loginTestUser()
     // console.log(`context.testUser: ${JSON.stringify(context.testUser, null, 2)}`)
@@ -25,7 +32,11 @@ describe('API Token', () => {
 
     // const admin = await adminLib.loginAdmin()
     // console.log(`admin: ${JSON.stringify(admin, null, 2)}`)
+
+    sandbox = sinon.createSandbox()
   })
+
+  afterEach(() => sandbox.restore())
 
   describe('GET /apitoken/bchaddr/:id', () => {
     it('should not fetch user if auth header is missing', async () => {
@@ -125,7 +136,7 @@ describe('API Token', () => {
       const token = context.testUser.token
 
       // Update the credit level of the test user.
-      context.testUser.credit = 100.00
+      context.testUser.credit = 100.0
       await testUtils.updateUser(context.testUser)
 
       const options = {
@@ -177,7 +188,8 @@ describe('API Token', () => {
     })
 
     it('should return false for expired token', async () => {
-      const expiredToken = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjVkYTc5NWI2ODAwZWNlNjIyMDkwYTU4ZSIsImlhdCI6MTU3MTI2MzkyNywiZXhwIjoxNTcxMjYzOTI5fQ.AGPnVHnZDDKqz8a6sp8YK9OUzdv0xHIbCur3EpTrSBo'
+      const expiredToken =
+        'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjVkYTc5NWI2ODAwZWNlNjIyMDkwYTU4ZSIsImlhdCI6MTU3MTI2MzkyNywiZXhwIjoxNTcxMjYzOTI5fQ.AGPnVHnZDDKqz8a6sp8YK9OUzdv0xHIbCur3EpTrSBo'
 
       const options = {
         method: 'GET',
@@ -242,7 +254,21 @@ describe('API Token', () => {
       }
     })
 
-    it('should get update credit for user', async () => {
+    it('should return same credit if BCH balance is zero', async () => {
+      // Mock live network calls.
+      sandbox.stub(apiTokenController.bchjs.Blockbook, 'balance').resolves({
+        page: 1,
+        totalPages: 1,
+        itemsOnPage: 1000,
+        address: context.testUser.bchAddr,
+        balance: '0',
+        totalReceived: '0',
+        totalSent: '0',
+        unconfirmedBalance: '0',
+        unconfirmedTxs: 0,
+        txs: 0
+      })
+
       const id = context.testUser.id
       const token = context.testUser.token
 
@@ -261,7 +287,48 @@ describe('API Token', () => {
 
       const result = await rp(options)
       const credit = result.body
-      console.log(`credit: ${util.inspect(credit)}`)
+      // console.log(`credit: ${util.inspect(credit)}`)
+
+      assert.equal(credit, startCredit)
+    })
+
+    it('should return new credit if BCH is deposited', async () => {
+      // Mock live network calls.
+      sandbox.stub(apiTokenController.bchjs.Blockbook, 'balance').resolves({
+        page: 1,
+        totalPages: 1,
+        itemsOnPage: 1000,
+        address: context.testUser.bchAddr,
+        balance: '0',
+        totalReceived: '0',
+        totalSent: '0',
+        unconfirmedBalance: '10000000',
+        unconfirmedTxs: 0,
+        txs: 0
+      })
+      sandbox.stub(apiTokenController.bchjs.Price, 'current').resolves(21665)
+
+      const id = context.testUser.id
+      const token = context.testUser.token
+
+      const startCredit = context.testUser.credit
+
+      const options = {
+        method: 'GET',
+        uri: `${LOCALHOST}/apitoken/update-credit/${id}`,
+        resolveWithFullResponse: true,
+        json: true,
+        headers: {
+          Accept: 'application/json',
+          Authorization: `Bearer ${token}`
+        }
+      }
+
+      const result = await rp(options)
+      const credit = result.body
+      // console.log(`credit: ${util.inspect(credit)}`)
+
+      assert.isAbove(credit, startCredit)
     })
   })
 })

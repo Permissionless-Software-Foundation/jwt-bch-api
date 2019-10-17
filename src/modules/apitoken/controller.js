@@ -6,9 +6,13 @@ const jwt = require('jsonwebtoken')
 const BCHJS = require('@chris.troutner/bch-js')
 const bchjs = new BCHJS()
 
+let _this
+
 class ApiTokenController {
   constructor () {
     this.bchjs = bchjs
+
+    _this = this
   }
 
   /**
@@ -140,19 +144,51 @@ class ApiTokenController {
       if (!user) {
         ctx.throw(404)
       }
-      console.log(`user: ${JSON.stringify(user, null, 2)}`)
+      // console.log(`user: ${JSON.stringify(user, null, 2)}`)
 
-      const balance = await bchjs.Blockbook.balance(user.bchAddr)
-      console.log(`balance: ${JSON.stringify(balance, null, 2)}`)
+      // Get the BCH balance of the users BCH address.
+      const balance = await _this.bchjs.Blockbook.balance(user.bchAddr)
+      // console.log(`balance: ${JSON.stringify(balance, null, 2)}`)
+
+      let totalBalance = Number(balance.balance) + Number(balance.unconfirmedBalance)
+
+      // Return existing credit if totalBalance is zero.
+      if (totalBalance === 0) {
+        ctx.body = user.credit
+        return
+      }
+
+      // Convert the balance from satoshis to BCH
+      totalBalance = _this.bchjs.BitcoinCash.toBitcoinCash(totalBalance)
+
+      // Get the price of BCH in USD
+      let bchPrice = await _this.bchjs.Price.current('usd')
+      bchPrice = bchPrice / 100
+      // console.log(`price: ${bchPrice}`)
+
+      // Calculate the amount of credit.
+      const newCredit = bchPrice * totalBalance
+
+      user.credit = user.credit + newCredit
+
+      // Update the user data in the DB.
+      try {
+        await user.save()
+      } catch (err) {
+        ctx.throw(422, err.message)
+      }
+
+      // Execute some code here to sweep funds from the users address into the
+      // company wallet.
 
       // Return the updated credit.
-      ctx.body = 4.01
+      ctx.body = user.credit
     } catch (err) {
       if (err === 404 || err.name === 'CastError') {
         ctx.throw(404)
       }
 
-      console.log(`Error in apitoken/controller.js/newToken()`, err)
+      console.log(`Error in apitoken/controller.js/updateCredit()`, err)
       ctx.throw(500)
     }
 
