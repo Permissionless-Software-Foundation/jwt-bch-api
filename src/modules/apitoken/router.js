@@ -19,6 +19,11 @@ module.exports.routes = [
     method: 'GET',
     route: '/isvalid/:jwt',
     handlers: [apiToken.isValid]
+  },
+  {
+    method: 'GET',
+    route: '/update-credit/:id',
+    handlers: [validator.ensureUser, apiToken.updateCredit]
   }
   /*
   {

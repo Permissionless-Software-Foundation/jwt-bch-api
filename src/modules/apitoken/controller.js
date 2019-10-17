@@ -3,6 +3,9 @@ const apiTokenLib = require('../../lib/api-token')
 const config = require('../../../config')
 const jwt = require('jsonwebtoken')
 
+const BCHJS = require('@chris.troutner/bch-js')
+const bchjs = new BCHJS()
+
 /**
  * @api {get} /apitoken/:id Get BCH payment address for user by user id
  * @apiPermission public
@@ -20,7 +23,7 @@ const jwt = require('jsonwebtoken')
  *       "bchAddr": "bitcoincash:qr9pnzql9ddh3lt3xcyefss0e7x70pr3ngzms6dun7"
  *     }
  */
-
+//
 // Given a user GUID, return the BCH payment address for that user.
 async function getBchAddr (ctx, next) {
   try {
@@ -124,8 +127,37 @@ function isValid (ctx, next) {
   }
 }
 
+async function updateCredit (ctx, next) {
+  try {
+    // Get user data
+    const user = await User.findById(ctx.params.id, '-password')
+    if (!user) {
+      ctx.throw(404)
+    }
+    console.log(`user: ${JSON.stringify(user, null, 2)}`)
+
+    const balance = await bchjs.Blockbook.balance(user.bchAddr)
+    console.log(`balance: ${JSON.stringify(balance, null, 2)}`)
+
+    // Return the updated credit.
+    ctx.body = 4.01
+  } catch (err) {
+    if (err === 404 || err.name === 'CastError') {
+      ctx.throw(404)
+    }
+
+    console.log(`Error in apitoken/controller.js/newToken()`, err)
+    ctx.throw(500)
+  }
+
+  if (next) {
+    return next()
+  }
+}
+
 module.exports = {
   getBchAddr,
   newToken,
-  isValid
+  isValid,
+  updateCredit
 }

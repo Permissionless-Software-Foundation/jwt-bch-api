@@ -195,4 +195,73 @@ describe('API Token', () => {
       assert.equal(result.body, false)
     })
   })
+
+  describe('GET /update-credit/:id', () => {
+    it('should throw 401 error if auth header is missing', async () => {
+      try {
+        const id = context.testUser.id
+        // const token = context.testUser.token
+
+        const options = {
+          method: 'GET',
+          uri: `${LOCALHOST}/apitoken/update-credit/${id}`,
+          resolveWithFullResponse: true,
+          json: true,
+          headers: {
+            Accept: 'application/json'
+          }
+        }
+
+        await rp(options)
+        assert.equal(true, false, 'Unexpected behavior')
+      } catch (err) {
+        assert.equal(err.statusCode, 401)
+      }
+    })
+
+    it('should throw 401 error if token is invalid', async () => {
+      try {
+        const id = context.testUser.id
+        // const token = context.testUser.token
+
+        const options = {
+          method: 'GET',
+          uri: `${LOCALHOST}/apitoken/update-credit/${id}`,
+          resolveWithFullResponse: true,
+          json: true,
+          headers: {
+            Accept: 'application/json',
+            Authorization: `Bearer 1`
+          }
+        }
+
+        await rp(options)
+        assert.equal(true, false, 'Unexpected behavior')
+      } catch (err) {
+        assert.equal(err.statusCode, 401)
+      }
+    })
+
+    it('should get update credit for user', async () => {
+      const id = context.testUser.id
+      const token = context.testUser.token
+
+      const startCredit = context.testUser.credit
+
+      const options = {
+        method: 'GET',
+        uri: `${LOCALHOST}/apitoken/update-credit/${id}`,
+        resolveWithFullResponse: true,
+        json: true,
+        headers: {
+          Accept: 'application/json',
+          Authorization: `Bearer ${token}`
+        }
+      }
+
+      const result = await rp(options)
+      const credit = result.body
+      console.log(`credit: ${util.inspect(credit)}`)
+    })
+  })
 })
