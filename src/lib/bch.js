@@ -59,11 +59,117 @@ class BCH {
     }
   }
 
+  // Generate a change address from a Mnemonic of a private key.
+  async changeAddrFromMnemonic (walletInfo, index) {
+    try {
+      if (!walletInfo.derivation) { throw new Error(`walletInfo must have integer derivation value.`) }
+      // console.log(`walletInfo: ${JSON.stringify(walletInfo, null, 2)}`)
+
+      // console.log(`index: ${index}`)
+      if (!index && index !== 0) { throw new Error(`index must be a non-negative integer.`) }
+
+      // root seed buffer
+      const rootSeed = await this.bchjs.Mnemonic.toSeed(walletInfo.mnemonic)
+
+      // master HDNode
+      const masterHDNode = this.bchjs.HDNode.fromSeed(rootSeed)
+
+      // HDNode of BIP44 account
+      // console.log(`derivation path: m/44'/${walletInfo.derivation}'/0'`)
+      const account = this.bchjs.HDNode.derivePath(
+        masterHDNode,
+        `m/44'/${walletInfo.derivation}'/0'`
+      )
+
+      // derive the first external change address HDNode which is going to spend utxo
+      const change = this.bchjs.HDNode.derivePath(account, `0/${index}`)
+
+      return change
+    } catch (err) {
+      console.log(`Error in bch.js/changeAddrFromMnemonic()`)
+      throw err
+    }
+  }
+
   // Sends all funds from fromAddr to toAddr.
   // Throws an address if the address at hdIndex does not match fromAddr.
   async sendAllAddr (fromAddr, hdIndex, toAddr) {
     try {
+      const utxos = await this.getUtxos(fromAddr)
+      console.log(`utxos: ${JSON.stringify(utxos, null, 2)}`)
 
+      if (!Array.isArray(utxos)) throw new Error(`utxos must be an array.`)
+
+      if (utxos.length === 0) throw new Error(`No utxos found.`)
+
+      // instance of transaction builder
+      const transactionBuilder = new this.bchjs.TransactionBuilder()
+
+      let originalAmount = 0
+
+      // Calulate the original amount in the wallet and add all UTXOs to the
+      // transaction builder.
+      for (var i = 0; i < utxos.length; i++) {
+        const utxo = utxos[i]
+
+        originalAmount = originalAmount + utxo.satoshis
+
+        transactionBuilder.addInput(utxo.txid, utxo.vout)
+      }
+
+      if (originalAmount < 1) { throw new Error(`Original amount is zero. No BCH to send.`) }
+
+      // original amount of satoshis in vin
+      // console.log(`originalAmount: ${originalAmount}`)
+
+      // get byte count to calculate fee. paying 1 sat/byte
+      const byteCount = this.BITBOX.BitcoinCash.getByteCount(
+        { P2PKH: utxos.length },
+        { P2PKH: 1 }
+      )
+      const fee = Math.ceil(1.1 * byteCount)
+      // console.log(`fee: ${byteCount}`)
+
+      // amount to send to receiver. It's the original amount - 1 sat/byte for tx size
+      const sendAmount = originalAmount - fee
+      // console.log(`sendAmount: ${sendAmount}`)
+
+      // add output w/ address and amount to send
+      transactionBuilder.addOutput(
+        this.bchjs.Address.toLegacyAddress(toAddr),
+        sendAmount
+      )
+
+      let redeemScript
+
+      // Loop through each input and sign
+      for (let i = 0; i < utxos.length; i++) {
+        const utxo = utxos[i]
+
+        // Generate a keypair for the current address.
+        const change = await appUtils.changeAddrFromMnemonic(
+          walletInfo,
+          utxo.hdIndex
+        )
+        const keyPair = this.BITBOX.HDNode.toKeyPair(change)
+
+        transactionBuilder.sign(
+          i,
+          keyPair,
+          redeemScript,
+          transactionBuilder.hashTypes.SIGHASH_ALL,
+          utxo.satoshis
+        )
+      }
+
+      // build tx
+      const tx = transactionBuilder.build()
+
+      // output rawhex
+      const hex = tx.toHex()
+      // console.log(`Transaction raw hex: ${hex}`)
+
+      return hex
     } catch (err) {
       console.error(`Error in bch.js/sendAllAddr()`)
       throw err
