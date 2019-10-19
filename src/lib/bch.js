@@ -127,7 +127,7 @@ class BCH {
   async sendAllAddr (fromAddr, hdIndex, toAddr) {
     try {
       const utxos = await this.getUtxos(fromAddr)
-      console.log(`utxos: ${JSON.stringify(utxos, null, 2)}`)
+      // console.log(`utxos: ${JSON.stringify(utxos, null, 2)}`)
 
       if (!Array.isArray(utxos)) throw new Error(`utxos must be an array.`)
 
@@ -156,7 +156,7 @@ class BCH {
       // console.log(`originalAmount: ${originalAmount}`)
 
       // get byte count to calculate fee. paying 1 sat/byte
-      const byteCount = this.BITBOX.BitcoinCash.getByteCount(
+      const byteCount = this.bchjs.BitcoinCash.getByteCount(
         { P2PKH: utxos.length },
         { P2PKH: 1 }
       )
@@ -178,6 +178,10 @@ class BCH {
       // Loop through each input and sign
       for (let i = 0; i < utxos.length; i++) {
         const utxo = utxos[i]
+
+        // Validte the UTXO before trying to spend it.
+        const isValid = await this.isValidUtxo(utxo)
+        if (!isValid) throw new Error(`Invalid UTXO detected. Wait for indexer to catch up.`)
 
         // Generate a keypair for the current address.
         const change = await this.changeAddrFromMnemonic(hdIndex)

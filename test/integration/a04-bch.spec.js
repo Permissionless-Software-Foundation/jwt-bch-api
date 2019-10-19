@@ -55,4 +55,18 @@ describe('bch.js', () => {
       assert.equal(result, true)
     })
   })
+
+  describe('#isValidUtxo', () => {
+    it('should generate hex transaction for address with balance', async () => {
+      const fromAddr = 'bitcoincash:qrdka2205f4hyukutc2g0s6lykperc8nsu5u2ddpqf'
+      const index = 0
+      const toAddr = 'bitcoincash:qr9pnzql9ddh3lt3xcyefss0e7x70pr3ngzms6dun7'
+
+      const result = await bch.sendAllAddr(fromAddr, index, toAddr)
+      // console.log(`result: ${JSON.stringify(result, null, 2)}`)
+
+      assert.isString(result)
+      assert.isAbove(result.indexOf('02000'), -1)
+    })
+  })
 })
