@@ -56,7 +56,7 @@ describe('bch.js', () => {
     })
   })
 
-  describe('#isValidUtxo', () => {
+  describe('#sendAllAddr', () => {
     it('should generate hex transaction for address with balance', async () => {
       const fromAddr = 'bitcoincash:qrdka2205f4hyukutc2g0s6lykperc8nsu5u2ddpqf'
       const index = 0

@@ -256,10 +256,10 @@ class BCH {
       const hex = await _this.sendAllAddr(addr, hdIndex, config.companyAddr)
 
       // Broadcast the transaction
-      return hex
-      // const txid = await this.broadcastTx(hex)
+      // return hex
+      const txid = await this.broadcastTx(hex)
 
-      // return txid
+      return txid
     } catch (err) {
       // If the error is anything other than 'no utxos found', then add
       // the transaction back into the queue to try again later.
