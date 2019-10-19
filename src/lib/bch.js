@@ -39,6 +39,36 @@ class BCH {
       throw err
     }
   }
+
+  // Retrieve the utxos for a given address from an indexer.
+  // Current indexer used: Blockbook
+  async getUtxos (addr) {
+    try {
+      // Convert to a cash address.
+      const bchAddr = this.bchjs.Address.toCashAddress(addr)
+      // console.log(`bchAddr: ${bchAddr}`)
+
+      // Get balance for address from Blockbook
+      const utxos = await this.bchjs.Blockbook.utxo(bchAddr)
+      // console.log(`utxos: ${JSON.stringify(utxos, null, 2)}`)
+
+      return utxos
+    } catch (err) {
+      console.error(`Error in bch.js/getUtxos()`)
+      throw err
+    }
+  }
+
+  // Sends all funds from fromAddr to toAddr.
+  // Throws an address if the address at hdIndex does not match fromAddr.
+  async sendAllAddr (fromAddr, hdIndex, toAddr) {
+    try {
+
+    } catch (err) {
+      console.error(`Error in bch.js/sendAllAddr()`)
+      throw err
+    }
+  }
 }
 
 module.exports = BCH

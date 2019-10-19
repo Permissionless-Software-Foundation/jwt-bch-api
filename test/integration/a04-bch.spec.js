@@ -22,4 +22,18 @@ describe('bch.js', () => {
       assert.isAbove(result, 1)
     })
   })
+
+  describe('#getUtxos', () => {
+    it('should get utxos for a cash address', async () => {
+      const addr = 'bitcoincash:qrdka2205f4hyukutc2g0s6lykperc8nsu5u2ddpqf'
+
+      const result = await bch.getUtxos(addr)
+      // console.log(`result: ${JSON.stringify(result, null, 2)}`)
+
+      assert.isArray(result)
+      assert.property(result[0], 'txid')
+      assert.property(result[0], 'vout')
+      assert.property(result[0], 'satoshis')
+    })
+  })
 })
