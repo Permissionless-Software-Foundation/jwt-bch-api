@@ -29,5 +29,13 @@ describe('Users', () => {
         assert.property(change, 'keyPair')
       })
     })
+
+    describe('#queueTransaction', () => {
+      it('should queue a transaction', async () => {
+        const index = 4
+
+        await bch.queueTransaction(index)
+      })
+    })
   })
 })
