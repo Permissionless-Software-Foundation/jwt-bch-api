@@ -7,6 +7,8 @@
 const BCHJS = require('@chris.troutner/bch-js')
 const bchjs = new BCHJS()
 
+const walletInfo = require(`${__dirname}/../../config/wallet.json`)
+
 let _this
 
 class BCH {
@@ -60,8 +62,10 @@ class BCH {
   }
 
   // Generate a change address from a Mnemonic of a private key.
-  async changeAddrFromMnemonic (walletInfo, index) {
+  async changeAddrFromMnemonic (index) {
     try {
+      // console.log(`walletInfo: ${JSON.stringify(walletInfo, null, 2)}`)
+
       if (!walletInfo.derivation) { throw new Error(`walletInfo must have integer derivation value.`) }
       // console.log(`walletInfo: ${JSON.stringify(walletInfo, null, 2)}`)
 
@@ -147,9 +151,9 @@ class BCH {
         const utxo = utxos[i]
 
         // Generate a keypair for the current address.
-        const change = await appUtils.changeAddrFromMnemonic(
+        const change = await this.changeAddrFromMnemonic(
           walletInfo,
-          utxo.hdIndex
+          hdIndex
         )
         const keyPair = this.BITBOX.HDNode.toKeyPair(change)
 
