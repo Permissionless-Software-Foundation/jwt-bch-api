@@ -263,7 +263,10 @@ class BCH {
     } catch (err) {
       // If the error is anything other than 'no utxos found', then add
       // the transaction back into the queue to try again later.
-      if (err.message.indexOf(`No utxos found`) > -1) {
+      if (
+        err.message.indexOf(`No utxos found`) > -1 ||
+        err.message.indexOf(`Invalid UTXO detected`) > -1
+      ) {
         throw new pRetry.AbortError(`No utxos found.`)
       }
 

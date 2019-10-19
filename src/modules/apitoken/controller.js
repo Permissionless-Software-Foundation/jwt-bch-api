@@ -155,7 +155,8 @@ class ApiTokenController {
       const balance = await _this.bchjs.Blockbook.balance(user.bchAddr)
       // console.log(`balance: ${JSON.stringify(balance, null, 2)}`)
 
-      let totalBalance = Number(balance.balance) + Number(balance.unconfirmedBalance)
+      let totalBalance =
+        Number(balance.balance) + Number(balance.unconfirmedBalance)
 
       // Return existing credit if totalBalance is zero.
       if (totalBalance === 0) {
@@ -191,6 +192,13 @@ class ApiTokenController {
       // Return the updated credit.
       ctx.body = user.credit
     } catch (err) {
+      if (err.message.indexOf(`No utxos found`) > -1) {
+        ctx.throw(
+          409,
+          'UTXO not found. Try again in a minute or send additional BCH.'
+        )
+      }
+
       if (err === 404 || err.name === 'CastError') {
         ctx.throw(404)
       }
