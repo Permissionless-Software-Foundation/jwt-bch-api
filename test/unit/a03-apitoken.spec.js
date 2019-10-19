@@ -307,6 +307,7 @@ describe('API Token', () => {
         txs: 0
       })
       sandbox.stub(apiTokenController.bchjs.Price, 'current').resolves(21665)
+      sandbox.stub(apiTokenController.bch, 'queueTransaction').resolves('0f333b474ecab740e78bd6ab1160c790a0fd935727d22c35e8da67e71733911d')
 
       const id = context.testUser.id
       const token = context.testUser.token

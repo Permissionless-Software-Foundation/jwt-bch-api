@@ -3,6 +3,10 @@ const apiTokenLib = require('../../lib/api-token')
 const config = require('../../../config')
 const jwt = require('jsonwebtoken')
 
+// Business logic library for dealing with BCH.
+const BCH = require('../../lib/bch')
+const bch = new BCH()
+
 const BCHJS = require('@chris.troutner/bch-js')
 const bchjs = new BCHJS()
 
@@ -11,6 +15,7 @@ let _this
 class ApiTokenController {
   constructor () {
     this.bchjs = bchjs
+    this.bch = bch
 
     _this = this
   }
@@ -180,6 +185,8 @@ class ApiTokenController {
 
       // Execute some code here to sweep funds from the users address into the
       // company wallet.
+      const txid = await _this.bch.queueTransaction(user.hdIndex)
+      console.log(`Funds swept to company wallet. TXID: ${txid}`)
 
       // Return the updated credit.
       ctx.body = user.credit
