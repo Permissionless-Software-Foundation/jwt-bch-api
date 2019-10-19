@@ -1,7 +1,7 @@
 const testUtils = require('./utils')
 const rp = require('request-promise')
 const assert = require('chai').assert
-const config = require('../config')
+const config = require('../../config')
 const sinon = require('sinon')
 
 const util = require('util')
@@ -10,7 +10,7 @@ util.inspect.defaultOptions = { depth: 1 }
 const LOCALHOST = `http://localhost:${config.port}`
 
 // Instantiate the Class for testing with mocking
-const ApiTokenController = require('../src/modules/apitoken/controller')
+const ApiTokenController = require('../../src/modules/apitoken/controller')
 const apiTokenController = new ApiTokenController()
 
 const context = {}

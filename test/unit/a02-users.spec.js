@@ -1,7 +1,7 @@
 const testUtils = require('./utils')
 const rp = require('request-promise')
 const assert = require('chai').assert
-const config = require('../config')
+const config = require('../../config')
 
 const util = require('util')
 util.inspect.defaultOptions = { depth: 1 }
