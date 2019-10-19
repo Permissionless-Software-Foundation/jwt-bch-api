@@ -5,8 +5,13 @@
 'use strict'
 
 // Create a Promise queue.
-const { default: PQueue } = require('p-queue')
-const queue = new PQueue({ concurrency: 1 })
+// const { default: PQueue } = require('p-queue')
+// const queue = new PQueue({
+//   concurrency: 1
+// })
+
+// Retry promises
+const pRetry = require('p-retry')
 
 const config = require('../../config')
 const walletInfo = require(`${__dirname}/../../config/wallet.json`)
@@ -20,6 +25,8 @@ let _this
 class BCH {
   constructor () {
     this.bchjs = bchjs
+
+    this.TIMEOUT = 1000 // timeout between intervals when retrying transactions.
 
     _this = this
   }
@@ -113,7 +120,9 @@ class BCH {
     try {
       // Input validation.
       if (!utxo.txid) throw new Error(`utxo does not have a txid property`)
-      if (!utxo.vout && utxo.vout !== 0) { throw new Error(`utxo does not have a vout property`) }
+      if (!utxo.vout && utxo.vout !== 0) {
+        throw new Error(`utxo does not have a vout property`)
+      }
 
       // console.log(`utxo: ${JSON.stringify(utxo, null, 2)}`)
 
@@ -187,7 +196,11 @@ class BCH {
 
         // Validte the UTXO before trying to spend it.
         const isValid = await this.isValidUtxo(utxo)
-        if (!isValid) throw new Error(`Invalid UTXO detected. Wait for indexer to catch up.`)
+        if (!isValid) {
+          throw new Error(
+            `Invalid UTXO detected. Wait for indexer to catch up.`
+          )
+        }
 
         // Generate a keypair for the current address.
         const change = await this.changeAddrFromMnemonic(hdIndex)
@@ -232,14 +245,15 @@ class BCH {
 
   // Generates and broadcasts a transaction to sweep funds from a users wallet.
   async generateTransaction (hdIndex) {
+    console.log(`generating transaction for index ${hdIndex}`)
     try {
       // Generate the public address from the hdIndex.
-      const change = await this.changeAddrFromMnemonic(hdIndex)
-      const addr = this.bchjs.HDNode.toCashAddress(change)
+      const change = await _this.changeAddrFromMnemonic(hdIndex)
+      const addr = _this.bchjs.HDNode.toCashAddress(change)
       console.log(`addr: ${JSON.stringify(addr, null, 2)}`)
 
       // Generate the hex for the transaction.
-      const hex = await this.sendAllAddr(addr, hdIndex, config.companyAddr)
+      const hex = await _this.sendAllAddr(addr, hdIndex, config.companyAddr)
 
       // Broadcast the transaction
       return hex
@@ -247,6 +261,12 @@ class BCH {
 
       // return txid
     } catch (err) {
+      // If the error is anything other than 'no utxos found', then add
+      // the transaction back into the queue to try again later.
+      if (err.message.indexOf(`No utxos found`) > -1) {
+        throw new pRetry.AbortError(`No utxos found.`)
+      }
+
       console.error(`Error in generateTransaction: ${err.message}`)
       throw err
     }
@@ -257,15 +277,37 @@ class BCH {
   // the hdIndex, and send those funds to the company wallet.
   // If the transaction fails, it will be retried until it succeeds.
   async queueTransaction (hdIndex) {
+    // console.log(`hdIndex: ${hdIndex}`)
     try {
-      // Generate the public address from the hdIndex.
-      const change = await this.changeAddrFromMnemonic(hdIndex)
-      const addr = this.bchjs.HDNode.toCashAddress(change)
-      console.log(`addr: ${JSON.stringify(addr, null, 2)}`)
+      // Wrap the call to generateTransaction into an async function.
+      const run = async () => _this.generateTransaction(hdIndex)
+
+      // Generate a transaction and try 5 times on failure.
+      const txid = await pRetry(run, {
+        onFailedAttempt: async error => {
+          // Log failed attempt.
+          console.log(
+            `Attempt ${
+              error.attemptNumber
+            } to sweep HD index ${hdIndex} failed. There are ${
+              error.retriesLeft
+            } retries left. Waiting ${this.TIMEOUT} milliseconds.`
+          )
+          this.sleep(this.TIMEOUT)
+        },
+        retries: 5
+      })
+
+      return txid
     } catch (err) {
       console.error(`Error in bch.js/queueTransaction()`)
+      // console.log(`err.message: ${err.message}`)
       throw err
     }
+  }
+
+  sleep (ms) {
+    return new Promise(resolve => setTimeout(resolve, ms))
   }
 }
 
