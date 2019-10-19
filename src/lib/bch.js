@@ -32,7 +32,8 @@ class BCH {
       // console.log(`addrInfo: ${JSON.stringify(addrInfo, null, 2)}`)
 
       // Calculate the spot-balance
-      const balance = Number(addrInfo.balance) + Number(addrInfo.unconfirmedBalance)
+      const balance =
+        Number(addrInfo.balance) + Number(addrInfo.unconfirmedBalance)
       // console.log(`balance: ${JSON.stringify(balance, null, 2)}`)
 
       return balance
@@ -66,11 +67,15 @@ class BCH {
     try {
       // console.log(`walletInfo: ${JSON.stringify(walletInfo, null, 2)}`)
 
-      if (!walletInfo.derivation) { throw new Error(`walletInfo must have integer derivation value.`) }
+      if (!walletInfo.derivation) {
+        throw new Error(`walletInfo must have integer derivation value.`)
+      }
       // console.log(`walletInfo: ${JSON.stringify(walletInfo, null, 2)}`)
 
       // console.log(`index: ${index}`)
-      if (!index && index !== 0) { throw new Error(`index must be a non-negative integer.`) }
+      if (!index && index !== 0) {
+        throw new Error(`index must be a non-negative integer.`)
+      }
 
       // root seed buffer
       const rootSeed = await this.bchjs.Mnemonic.toSeed(walletInfo.mnemonic)
@@ -91,6 +96,28 @@ class BCH {
       return change
     } catch (err) {
       console.log(`Error in bch.js/changeAddrFromMnemonic()`)
+      throw err
+    }
+  }
+
+  // Call the full node to validate that UTXO has not been spent.
+  // Returns true if UTXO is unspent.
+  // Returns false if UTXO is spent.
+  async isValidUtxo (utxo) {
+    try {
+      // Input validation.
+      if (!utxo.txid) throw new Error(`utxo does not have a txid property`)
+      if (!utxo.vout && utxo.vout !== 0) { throw new Error(`utxo does not have a vout property`) }
+
+      // console.log(`utxo: ${JSON.stringify(utxo, null, 2)}`)
+
+      const txout = await this.bchjs.Blockchain.getTxOut(utxo.txid, utxo.vout)
+      // console.log(`txout: ${JSON.stringify(txout, null, 2)}`)
+
+      if (txout === null) return false
+      return true
+    } catch (err) {
+      console.error('Error in bch.js/validateUtxo()')
       throw err
     }
   }
@@ -121,7 +148,9 @@ class BCH {
         transactionBuilder.addInput(utxo.txid, utxo.vout)
       }
 
-      if (originalAmount < 1) { throw new Error(`Original amount is zero. No BCH to send.`) }
+      if (originalAmount < 1) {
+        throw new Error(`Original amount is zero. No BCH to send.`)
+      }
 
       // original amount of satoshis in vin
       // console.log(`originalAmount: ${originalAmount}`)
@@ -151,11 +180,8 @@ class BCH {
         const utxo = utxos[i]
 
         // Generate a keypair for the current address.
-        const change = await this.changeAddrFromMnemonic(
-          walletInfo,
-          hdIndex
-        )
-        const keyPair = this.BITBOX.HDNode.toKeyPair(change)
+        const change = await this.changeAddrFromMnemonic(hdIndex)
+        const keyPair = this.bchjs.HDNode.toKeyPair(change)
 
         transactionBuilder.sign(
           i,
