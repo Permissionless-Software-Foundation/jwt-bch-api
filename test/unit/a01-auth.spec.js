@@ -1,5 +1,5 @@
 const app = require('../../bin/server')
-const utils = require('./utils')
+const utils = require('../utils')
 const config = require('../../config')
 const rp = require('request-promise')
 const assert = require('chai').assert

@@ -1,4 +1,4 @@
-const testUtils = require('./utils')
+const testUtils = require('../utils')
 const rp = require('request-promise')
 const assert = require('chai').assert
 const config = require('../../config')
