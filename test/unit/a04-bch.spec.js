@@ -30,12 +30,21 @@ describe('Users', () => {
       })
     })
 
-    describe('#queueTransaction', () => {
-      it('should queue a transaction', async () => {
+    describe('#generateTransaction', () => {
+      it('should', async () => {
         const index = 4
 
-        await bch.queueTransaction(index)
+        const result = await bch.generateTransaction(index)
+        console.log(`result: ${JSON.stringify(result, null, 2)}`)
       })
     })
+
+    // describe('#queueTransaction', () => {
+    //   it('should queue a transaction', async () => {
+    //     const index = 4
+    //
+    //     await bch.queueTransaction(index)
+    //   })
+    // })
   })
 })

@@ -4,10 +4,16 @@
 
 'use strict'
 
+// Create a Promise queue.
+const { default: PQueue } = require('p-queue')
+const queue = new PQueue({ concurrency: 1 })
+
+const config = require('../../config')
+const walletInfo = require(`${__dirname}/../../config/wallet.json`)
+
+// Instantiate the bch-js library.
 const BCHJS = require('@chris.troutner/bch-js')
 const bchjs = new BCHJS()
-
-const walletInfo = require(`${__dirname}/../../config/wallet.json`)
 
 let _this
 
@@ -220,6 +226,28 @@ class BCH {
       return txid
     } catch (err) {
       console.log(`Error in bchjs.js/broadcastTx()`)
+      throw err
+    }
+  }
+
+  // Generates and broadcasts a transaction to sweep funds from a users wallet.
+  async generateTransaction (hdIndex) {
+    try {
+      // Generate the public address from the hdIndex.
+      const change = await this.changeAddrFromMnemonic(hdIndex)
+      const addr = this.bchjs.HDNode.toCashAddress(change)
+      console.log(`addr: ${JSON.stringify(addr, null, 2)}`)
+
+      // Generate the hex for the transaction.
+      const hex = await this.sendAllAddr(addr, hdIndex, config.companyAddr)
+
+      // Broadcast the transaction
+      return hex
+      // const txid = await this.broadcastTx(hex)
+
+      // return txid
+    } catch (err) {
+      console.error(`Error in generateTransaction: ${err.message}`)
       throw err
     }
   }
