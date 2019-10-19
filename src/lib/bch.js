@@ -18,13 +18,20 @@ class BCH {
 
   // Retrieve the balance for a given address from an indexer.
   // Current indexer used: Blockbook
+  // Returns value in satoshis.
   async getBalance (addr) {
     try {
       // Convert to a cash address.
       const bchAddr = this.bchjs.Address.toCashAddress(addr)
+      // console.log(`bchAddr: ${bchAddr}`)
 
       // Get balance for address from Blockbook
-      const balance = this.bchjs.Blockbook.balance(bchAddr)
+      const addrInfo = await this.bchjs.Blockbook.balance(bchAddr)
+      // console.log(`addrInfo: ${JSON.stringify(addrInfo, null, 2)}`)
+
+      // Calculate the spot-balance
+      const balance = Number(addrInfo.balance) + Number(addrInfo.unconfirmedBalance)
+      // console.log(`balance: ${JSON.stringify(balance, null, 2)}`)
 
       return balance
     } catch (err) {
