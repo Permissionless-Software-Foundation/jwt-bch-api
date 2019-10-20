@@ -71,7 +71,25 @@ class ApiTokenController {
     try {
       // Get user data
       const user = ctx.state.user
-      // console.log(`user: ${JSON.stringify(user, null, 2)}`)
+      console.log(`user: ${JSON.stringify(user, null, 2)}`)
+
+      if (user.apiToken) {
+        const decoded = jwt.decode(user.apiToken)
+        console.log(`decoded: ${JSON.stringify(decoded, null, 2)}`)
+
+        const exp = decoded.exp
+        let now = new Date()
+        now = now / 1000
+
+        let diff = exp - now
+        diff = diff * 1000 // Convert back to JS Date.
+        diff = diff / (1000 * 60 * 60 * 24) // Convert to days.
+        console.log(`Time left: ${diff} days`)
+
+        const refund = diff / 30 * config.monthlyPrice
+        console.log(`refunding ${refund} dollars`)
+        user.credit += refund
+      }
 
       // Check against balance.
       if (user.credit < config.monthlyPrice) ctx.throw(402, 'Not enough credit')
