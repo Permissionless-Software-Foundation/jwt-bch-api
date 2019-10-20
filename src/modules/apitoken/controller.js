@@ -73,21 +73,10 @@ class ApiTokenController {
       const user = ctx.state.user
       console.log(`user: ${JSON.stringify(user, null, 2)}`)
 
+      // If the user already has a JWT token, calculate a refund for the time
+      // they've paid for.
       if (user.apiToken) {
-        const decoded = jwt.decode(user.apiToken)
-        console.log(`decoded: ${JSON.stringify(decoded, null, 2)}`)
-
-        const exp = decoded.exp
-        let now = new Date()
-        now = now / 1000
-
-        let diff = exp - now
-        diff = diff * 1000 // Convert back to JS Date.
-        diff = diff / (1000 * 60 * 60 * 24) // Convert to days.
-        console.log(`Time left: ${diff} days`)
-
-        const refund = diff / 30 * config.monthlyPrice
-        console.log(`refunding ${refund} dollars`)
+        const refund = this._calculateRefund(user)
         user.credit += refund
       }
 
@@ -130,6 +119,33 @@ class ApiTokenController {
 
     if (next) {
       return next()
+    }
+  }
+
+  _calculateRefund (user) {
+    try {
+      const decoded = jwt.decode(user.apiToken)
+      // console.log(`decoded: ${JSON.stringify(decoded, null, 2)}`)
+
+      const exp = decoded.exp
+      let now = new Date()
+      now = now / 1000
+
+      let diff = exp - now
+      diff = diff * 1000 // Convert back to JS Date.
+      diff = diff / (1000 * 60 * 60 * 24) // Convert to days.
+      // console.log(`Time left: ${diff} days`)
+
+      let refund = diff / 30 * config.monthlyPrice
+
+      if (refund < 0) refund = 0
+
+      console.log(`refunding ${refund} dollars`)
+
+      return refund
+    } catch (err) {
+      console.error(`Error in apiToken controller.js/_calculateRefund()`)
+      throw err
     }
   }
 
