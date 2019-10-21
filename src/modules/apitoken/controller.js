@@ -76,7 +76,7 @@ class ApiTokenController {
       // If the user already has a JWT token, calculate a refund for the time
       // they've paid for.
       if (user.apiToken) {
-        const refund = this._calculateRefund(user)
+        const refund = _this._calculateRefund(user)
         user.credit += refund
       }
 
