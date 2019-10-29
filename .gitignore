@@ -65,3 +65,4 @@ system-user-*.json
 # Specific to jwt-bch-api
 bkup-wallet.json
 wallet.json
+
