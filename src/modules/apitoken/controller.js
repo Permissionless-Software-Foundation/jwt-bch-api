@@ -71,7 +71,7 @@ class ApiTokenController {
     try {
       // Get user data
       const user = ctx.state.user
-      console.log(`user: ${JSON.stringify(user, null, 2)}`)
+      // console.log(`user: ${JSON.stringify(user, null, 2)}`)
 
       // If the user already has a JWT token, calculate a refund for the time
       // they've paid for.

@@ -206,6 +206,53 @@ describe('API Token', () => {
 
       assert.equal(result.body, false)
     })
+
+    it('should return false if JWT token is not associated with user', async () => {
+      // Get the existing API token.
+      // Assumption: this test if run after the apitoken/new tests, so the
+      // test user has a new, valid API token attached to their model.
+      context.testUser = await testUtils.loginTestUser()
+      const oldToken = context.testUser.apiToken
+      console.log(`old token: ${oldToken}`)
+
+      // Wait 1 second so that JWT token value changes.
+      await sleep(1000)
+
+      // Request a new token
+      const options = {
+        method: 'POST',
+        uri: `${LOCALHOST}/apitoken/new`,
+        resolveWithFullResponse: true,
+        json: true,
+        headers: {
+          Accept: 'application/json',
+          Authorization: `Bearer ${context.testUser.token}`
+        }
+      }
+
+      const result = await rp(options)
+      const apiToken = result.body.apiToken
+      console.log(`New token: ${apiToken}`)
+
+      // Assert that the new token is different than the old token.
+      assert.notEqual(apiToken, oldToken)
+
+      // Make an API call with the old token.
+      const options2 = {
+        method: 'GET',
+        uri: `${LOCALHOST}/apitoken/isvalid/${oldToken}`,
+        resolveWithFullResponse: true,
+        json: true,
+        headers: {
+          Accept: 'application/json'
+          // Authorization: `Bearer ${token}`
+        }
+      }
+
+      const result2 = await rp(options2)
+
+      assert.equal(result2.body, false)
+    })
   })
 
   describe('GET /update-credit/:id', () => {
@@ -289,7 +336,7 @@ describe('API Token', () => {
       const credit = result.body
       // console.log(`credit: ${util.inspect(credit)}`)
 
-      assert.equal(credit, startCredit)
+      assert.isAbove(credit, startCredit - 10)
     })
 
     it('should return new credit if BCH is deposited', async () => {
@@ -333,3 +380,7 @@ describe('API Token', () => {
     })
   })
 })
+
+function sleep (ms) {
+  return new Promise(resolve => setTimeout(resolve, ms))
+}
