@@ -213,7 +213,7 @@ describe('API Token', () => {
       // test user has a new, valid API token attached to their model.
       context.testUser = await testUtils.loginTestUser()
       const oldToken = context.testUser.apiToken
-      console.log(`old token: ${oldToken}`)
+      // console.log(`old token: ${oldToken}`)
 
       // Wait 1 second so that JWT token value changes.
       await sleep(1000)
@@ -232,7 +232,7 @@ describe('API Token', () => {
 
       const result = await rp(options)
       const apiToken = result.body.apiToken
-      console.log(`New token: ${apiToken}`)
+      // console.log(`New token: ${apiToken}`)
 
       // Assert that the new token is different than the old token.
       assert.notEqual(apiToken, oldToken)
