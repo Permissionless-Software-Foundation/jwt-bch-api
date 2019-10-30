@@ -11,7 +11,7 @@
     "docs": "./node_modules/.bin/apidoc -i src/ -o docs",
     "coverage": "nyc report --reporter=text-lcov | coveralls",
     "coverage:report": "nyc --reporter=html mocha --exit",
-    "prep-test": "node util/users/delete-all-test-users.js"
+    "prep-test": "node util/users/delete-all-test-users.js && cp ./config/bkup-wallet.json ./config/wallet.json"
   },
   "keywords": [
     "koa-api-boilerplate",
