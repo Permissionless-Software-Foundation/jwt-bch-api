@@ -97,7 +97,7 @@ describe('Users', () => {
         )
         assert.property(result.body, 'token', 'Token property exists.')
         assert.property(result.body.user, 'type')
-        assert.property(result.body.user, 'apiTokenIsValid')
+        assert.property(result.body.user, 'apiLevel')
         assert.property(result.body.user, '_id')
         assert.property(result.body.user, 'bchAddr')
         assert.property(result.body.user, 'hdIndex')

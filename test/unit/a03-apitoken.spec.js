@@ -182,9 +182,12 @@ describe('API Token', () => {
         }
       }
 
-      const result = await rp(options)
+      const rpOut = await rp(options)
+      const result = rpOut.body
 
-      assert.equal(result.body, true)
+      assert.property(result, 'isValid')
+      assert.property(result, 'apiLevel')
+      assert.equal(result.isValid, true)
     })
 
     it('should return false for expired token', async () => {
@@ -202,9 +205,12 @@ describe('API Token', () => {
         }
       }
 
-      const result = await rp(options)
+      const rpOut = await rp(options)
+      const result = rpOut.body
 
-      assert.equal(result.body, false)
+      assert.property(result, 'isValid')
+      assert.property(result, 'apiLevel')
+      assert.equal(result.isValid, false)
     })
 
     it('should return false if JWT token is not associated with user', async () => {
@@ -249,9 +255,12 @@ describe('API Token', () => {
         }
       }
 
-      const result2 = await rp(options2)
+      const rpOut = await rp(options2)
+      const result2 = rpOut.body
 
-      assert.equal(result2.body, false)
+      assert.property(result2, 'isValid')
+      assert.property(result2, 'apiLevel')
+      assert.equal(result2.isValid, false)
     })
   })
 
