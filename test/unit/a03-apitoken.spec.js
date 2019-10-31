@@ -111,17 +111,6 @@ describe('API Token', () => {
     })
   })
 
-  describe('_calculateRefund', () => {
-    it('should calculate a refund for a free account', () => {
-      const user = mockData.userMock
-
-      const result = apiTokenController._calculateRefund(user)
-      // console.log(`result: ${JSON.stringify(result, null, 2)}`)
-
-      assert.equal(result, 0)
-    })
-  })
-
   describe('POST /apitoken/new', () => {
     it('should throw 422 error if apiLevel is not included', async () => {
       try {
@@ -192,6 +181,35 @@ describe('API Token', () => {
         },
         body: {
           apiLevel: 0
+        }
+      }
+
+      const result = await rp(options)
+      const apiToken = result.body
+      // console.log(`apiToken: ${util.inspect(apiToken)}`)
+
+      assert.isString(apiToken.apiToken)
+    })
+
+    it('should get a new, $10 API key', async () => {
+      // const id = context.testUser.id
+      const token = context.testUser.token
+
+      // Update the credit level of the test user.
+      context.testUser.credit = 100.0
+      await testUtils.updateUser(context.testUser)
+
+      const options = {
+        method: 'POST',
+        uri: `${LOCALHOST}/apitoken/new`,
+        resolveWithFullResponse: true,
+        json: true,
+        headers: {
+          Accept: 'application/json',
+          Authorization: `Bearer ${token}`
+        },
+        body: {
+          apiLevel: 10
         }
       }
 
@@ -306,6 +324,47 @@ describe('API Token', () => {
       assert.property(result2, 'isValid')
       assert.property(result2, 'apiLevel')
       assert.equal(result2.isValid, false)
+    })
+  })
+
+  describe('_calculateRefund', () => {
+    it('should calculate a refund for a free account', () => {
+      // Generate user mock data. Replace JWT token with up-to-date version.
+      const user = Object.assign({}, mockData.userMock)
+      user.apiToken = context.testUser.apiToken
+      // console.log(`user: ${JSON.stringify(user, null, 2)}`)
+      // console.log(`context.testUser: ${JSON.stringify(context.testUser, null, 2)}`)
+
+      const result = apiTokenController._calculateRefund(user)
+      // console.log(`result: ${JSON.stringify(result, null, 2)}`)
+
+      assert.equal(result, 0)
+    })
+
+    it('should calculate a refund for a $10 account', () => {
+      // Generate user mock data. Replace JWT token with up-to-date version.
+      const user = Object.assign({}, mockData.userMock)
+      user.apiToken = context.testUser.apiToken
+      user.apiLevel = 10
+
+      const result = apiTokenController._calculateRefund(user)
+      // console.log(`result: ${JSON.stringify(result, null, 2)}`)
+
+      assert.isBelow(result, 10)
+      assert.isAbove(result, 9)
+    })
+
+    it('should calculate a refund for a $20 account', () => {
+      // Generate user mock data. Replace JWT token with up-to-date version.
+      const user = Object.assign({}, mockData.userMock)
+      user.apiToken = context.testUser.apiToken
+      user.apiLevel = 20
+
+      const result = apiTokenController._calculateRefund(user)
+      // console.log(`result: ${JSON.stringify(result, null, 2)}`)
+
+      assert.isBelow(result, 20)
+      assert.isAbove(result, 19)
     })
   })
 

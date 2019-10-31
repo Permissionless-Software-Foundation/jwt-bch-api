@@ -3,6 +3,8 @@ const apiTokenLib = require('../../lib/api-token')
 const config = require('../../../config')
 const jwt = require('jsonwebtoken')
 
+const wlogger = require('../../lib/wlogger')
+
 // Business logic library for dealing with BCH.
 const BCH = require('../../lib/bch')
 const bch = new BCH()
@@ -148,7 +150,7 @@ class ApiTokenController {
 
       if (refund < 0) refund = 0
 
-      console.log(`refunding ${refund} dollars`)
+      wlogger.info(`refunding ${refund} dollars`)
 
       return refund
     } catch (err) {
