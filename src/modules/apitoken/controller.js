@@ -69,6 +69,8 @@ class ApiTokenController {
   // Request a new API JWT token.
   async newToken (ctx, next) {
     try {
+      console.log(`ctx.request.body: ${JSON.stringify(ctx.request.body, null, 2)}`)
+
       // Get user data
       const user = ctx.state.user
       // console.log(`user: ${JSON.stringify(user, null, 2)}`)
