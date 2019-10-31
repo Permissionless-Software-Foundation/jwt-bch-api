@@ -152,7 +152,10 @@ class ApiTokenController {
   // Expects an API JWT token as input and returns true or false if it's valid.
   async isValid (ctx, next) {
     // false by default.
-    let result = false
+    let outObj = {
+      isValid: false,
+      apiLevel: 0
+    }
 
     try {
       const token = ctx.params.jwt
@@ -172,18 +175,19 @@ class ApiTokenController {
       // If the provided JWT does match what's in the user model, then the
       // provided JWT has been replaced and is no longer valid.
       if (user.apiToken !== token) {
-        ctx.body = false
+        ctx.body = outObj
         return
       }
 
       // If an error was not thrown, then the token is valid.
-      result = true
+      outObj.isValid = true
+      outObj.apiLevel = user.apiLevel
 
-      ctx.body = result
+      ctx.body = outObj
     } catch (err) {
-      // console.error(`Error in apitoken/isValid: `, err)
+      console.error(`Error in apitoken/isValid(). Returning false.`)
       // If any error is thrown, return false, indicating the JWT token is invalid.
-      ctx.body = result
+      ctx.body = outObj
     }
 
     if (next) {

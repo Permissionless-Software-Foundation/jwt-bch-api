@@ -9,11 +9,11 @@ const User = new mongoose.Schema({
   username: { type: String, required: true, unique: true },
   password: { type: String, required: true },
   apiToken: { type: String },
+  apiLevel: { type: Number, default: 0 }, // Access level. 0 = public access.
   bchAddr: { type: String }, // BCH address.
   hdIndex: { type: Number }, // Index in the hd wallet associated with this user.
   satBal: { type: Number, default: 0 }, // balance of BCH in satoshis
-  credit: { type: Number, default: 0 }, // account credit in USD.
-  apiTokenIsValid: { type: Boolean, default: false }
+  credit: { type: Number, default: 0 } // account credit in USD.
 })
 
 User.pre('save', function preSave (next) {
