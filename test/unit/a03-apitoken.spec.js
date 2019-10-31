@@ -9,6 +9,9 @@ util.inspect.defaultOptions = { depth: 1 }
 
 const LOCALHOST = `http://localhost:${config.port}`
 
+// Mock data
+const mockData = require('./mocks/apitoken-mocks')
+
 // Instantiate the Class for testing with mocking
 const ApiTokenController = require('../../src/modules/apitoken/controller')
 const apiTokenController = new ApiTokenController()
@@ -108,8 +111,19 @@ describe('API Token', () => {
     })
   })
 
+  describe('_calculateRefund', () => {
+    it('should calculate a refund for a free account', () => {
+      const user = mockData.userMock
+
+      const result = apiTokenController._calculateRefund(user)
+      // console.log(`result: ${JSON.stringify(result, null, 2)}`)
+
+      assert.equal(result, 0)
+    })
+  })
+
   describe('POST /apitoken/new', () => {
-    it('should throw error if credit is too low', async () => {
+    it('should throw 422 error if apiLevel is not included', async () => {
       try {
         const token = context.testUser.token
 
@@ -127,11 +141,39 @@ describe('API Token', () => {
         await rp(options)
         assert.equal(true, false, 'Unexpected behavior')
       } catch (err) {
+        // console.log(`err: `, err)
+        assert.equal(err.statusCode, 422)
+        assert.include(err.message, 'apiLevel must be an integer number')
+      }
+    })
+
+    it('should throw 402 error if credit is too low', async () => {
+      try {
+        const token = context.testUser.token
+
+        const options = {
+          method: 'POST',
+          uri: `${LOCALHOST}/apitoken/new`,
+          resolveWithFullResponse: true,
+          json: true,
+          headers: {
+            Accept: 'application/json',
+            Authorization: `Bearer ${token}`
+          },
+          body: {
+            apiLevel: 10
+          }
+        }
+
+        await rp(options)
+        assert.equal(true, false, 'Unexpected behavior')
+      } catch (err) {
+        // console.log(`err: `, err)
         assert.equal(err.statusCode, 402)
       }
     })
 
-    it('should get a new API key', async () => {
+    it('should get a new, free API key', async () => {
       // const id = context.testUser.id
       const token = context.testUser.token
 
@@ -147,6 +189,9 @@ describe('API Token', () => {
         headers: {
           Accept: 'application/json',
           Authorization: `Bearer ${token}`
+        },
+        body: {
+          apiLevel: 0
         }
       }
 
@@ -155,9 +200,6 @@ describe('API Token', () => {
       // console.log(`apiToken: ${util.inspect(apiToken)}`)
 
       assert.isString(apiToken.apiToken)
-
-      // TODO: Get user data and assert that the apiTokenIsValid flag is set
-      // to true.
     })
   })
 
@@ -233,6 +275,9 @@ describe('API Token', () => {
         headers: {
           Accept: 'application/json',
           Authorization: `Bearer ${context.testUser.token}`
+        },
+        body: {
+          apiLevel: 0
         }
       }
 

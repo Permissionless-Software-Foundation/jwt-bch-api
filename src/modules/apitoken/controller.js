@@ -69,7 +69,13 @@ class ApiTokenController {
   // Request a new API JWT token.
   async newToken (ctx, next) {
     try {
-      console.log(`ctx.request.body: ${JSON.stringify(ctx.request.body, null, 2)}`)
+      // console.log(`ctx.request.body: ${JSON.stringify(ctx.request.body, null, 2)}`)
+      const newApiLevel = ctx.request.body.apiLevel
+
+      // Throw error if apiLevel is not included.
+      if ((newApiLevel !== 0 && !newApiLevel) || isNaN(newApiLevel)) {
+        ctx.throw(422, 'apiLevel must be an integer number')
+      }
 
       // Get user data
       const user = ctx.state.user
@@ -83,7 +89,7 @@ class ApiTokenController {
       }
 
       // Check against balance.
-      if (user.credit < config.monthlyPrice) ctx.throw(402, 'Not enough credit')
+      if (user.credit < newApiLevel) ctx.throw(402, 'Not enough credit')
       // TODO: credit for unexpired time from older jot token, before deducting
       // credit.
 
@@ -94,7 +100,7 @@ class ApiTokenController {
       user.apiToken = token
 
       // Deduct credit
-      user.credit = user.credit - config.monthlyPrice
+      user.credit = user.credit - newApiLevel
 
       // Set the isvalid flag
       user.apiTokenIsValid = true
@@ -109,11 +115,7 @@ class ApiTokenController {
       // Return the BCH address
       ctx.body = { apiToken: user.apiToken }
     } catch (err) {
-      if (err === 404 || err.name === 'CastError') {
-        ctx.throw(404)
-      }
-
-      if (err.message === 'Not enough credit') ctx.throw(err)
+      if (err.status) ctx.throw(err.status, err.message)
 
       console.log(`Error in apitoken/controller.js/newToken()`, err)
       ctx.throw(500)
@@ -124,8 +126,12 @@ class ApiTokenController {
     }
   }
 
+  // Calculates the refund, to be credited before generating a new JWT token.
   _calculateRefund (user) {
     try {
+      // console.log(`user: ${JSON.stringify(user, null, 2)}`)
+      const oldApiLevel = user.apiLevel
+
       const decoded = jwt.decode(user.apiToken)
       // console.log(`decoded: ${JSON.stringify(decoded, null, 2)}`)
 
@@ -138,7 +144,7 @@ class ApiTokenController {
       diff = diff / (1000 * 60 * 60 * 24) // Convert to days.
       // console.log(`Time left: ${diff} days`)
 
-      let refund = diff / 30 * config.monthlyPrice
+      let refund = diff / 30 * oldApiLevel
 
       if (refund < 0) refund = 0
 
