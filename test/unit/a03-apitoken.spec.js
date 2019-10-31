@@ -217,7 +217,13 @@ describe('API Token', () => {
       const apiToken = result.body
       // console.log(`apiToken: ${util.inspect(apiToken)}`)
 
+      // Should recieve a new API token.
       assert.isString(apiToken.apiToken)
+
+      const newUserData = await testUtils.loginTestUser()
+      // console.log(`newUserData: ${JSON.stringify(newUserData, null, 2)}`)
+
+      assert.equal(newUserData.credit, 90, 'should deduct $10 of credit from account')
     })
   })
 
