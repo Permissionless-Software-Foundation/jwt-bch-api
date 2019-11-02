@@ -104,8 +104,8 @@ class ApiTokenController {
       // Deduct credit
       user.credit = user.credit - newApiLevel
 
-      // Set the isvalid flag
-      user.apiTokenIsValid = true
+      // Set the new API level
+      user.apiLevel = newApiLevel
 
       // Update the user data in the DB.
       try {
@@ -115,7 +115,10 @@ class ApiTokenController {
       }
 
       // Return the BCH address
-      ctx.body = { apiToken: user.apiToken }
+      ctx.body = {
+        apiToken: token,
+        apiLevel: newApiLevel
+      }
     } catch (err) {
       if (err.status) ctx.throw(err.status, err.message)
 
