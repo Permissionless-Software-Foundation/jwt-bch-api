@@ -3,6 +3,8 @@ const apiTokenLib = require('../../lib/api-token')
 const config = require('../../../config')
 const jwt = require('jsonwebtoken')
 
+const wlogger = require('../../lib/wlogger')
+
 // Business logic library for dealing with BCH.
 const BCH = require('../../lib/bch')
 const bch = new BCH()
@@ -69,6 +71,14 @@ class ApiTokenController {
   // Request a new API JWT token.
   async newToken (ctx, next) {
     try {
+      // console.log(`ctx.request.body: ${JSON.stringify(ctx.request.body, null, 2)}`)
+      const newApiLevel = ctx.request.body.apiLevel
+
+      // Throw error if apiLevel is not included.
+      if ((newApiLevel !== 0 && !newApiLevel) || isNaN(newApiLevel)) {
+        ctx.throw(422, 'apiLevel must be an integer number')
+      }
+
       // Get user data
       const user = ctx.state.user
       // console.log(`user: ${JSON.stringify(user, null, 2)}`)
@@ -81,7 +91,7 @@ class ApiTokenController {
       }
 
       // Check against balance.
-      if (user.credit < config.monthlyPrice) ctx.throw(402, 'Not enough credit')
+      if (user.credit < newApiLevel) ctx.throw(402, 'Not enough credit')
       // TODO: credit for unexpired time from older jot token, before deducting
       // credit.
 
@@ -92,10 +102,10 @@ class ApiTokenController {
       user.apiToken = token
 
       // Deduct credit
-      user.credit = user.credit - config.monthlyPrice
+      user.credit = user.credit - newApiLevel
 
-      // Set the isvalid flag
-      user.apiTokenIsValid = true
+      // Set the new API level
+      user.apiLevel = newApiLevel
 
       // Update the user data in the DB.
       try {
@@ -105,13 +115,12 @@ class ApiTokenController {
       }
 
       // Return the BCH address
-      ctx.body = { apiToken: user.apiToken }
-    } catch (err) {
-      if (err === 404 || err.name === 'CastError') {
-        ctx.throw(404)
+      ctx.body = {
+        apiToken: token,
+        apiLevel: newApiLevel
       }
-
-      if (err.message === 'Not enough credit') ctx.throw(err)
+    } catch (err) {
+      if (err.status) ctx.throw(err.status, err.message)
 
       console.log(`Error in apitoken/controller.js/newToken()`, err)
       ctx.throw(500)
@@ -122,8 +131,12 @@ class ApiTokenController {
     }
   }
 
+  // Calculates the refund, to be credited before generating a new JWT token.
   _calculateRefund (user) {
     try {
+      // console.log(`user: ${JSON.stringify(user, null, 2)}`)
+      const oldApiLevel = user.apiLevel
+
       const decoded = jwt.decode(user.apiToken)
       // console.log(`decoded: ${JSON.stringify(decoded, null, 2)}`)
 
@@ -136,11 +149,11 @@ class ApiTokenController {
       diff = diff / (1000 * 60 * 60 * 24) // Convert to days.
       // console.log(`Time left: ${diff} days`)
 
-      let refund = diff / 30 * config.monthlyPrice
+      let refund = diff / 30 * oldApiLevel
 
       if (refund < 0) refund = 0
 
-      console.log(`refunding ${refund} dollars`)
+      wlogger.info(`refunding ${refund} dollars`)
 
       return refund
     } catch (err) {
