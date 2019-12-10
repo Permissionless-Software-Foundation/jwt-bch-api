@@ -2,9 +2,9 @@
   "name": "jwt-bch-api",
   "version": "1.0.0",
   "description": "A REST API for user management and paying for JWT tokens to access other REST APIs",
-  "main": "index.js",
+  "main": "auth-api.js",
   "scripts": {
-    "start": "node index.js",
+    "start": "node auth-api.js",
     "test": "npm run prep-test && KOA_ENV=test nyc --reporter=text ./node_modules/.bin/mocha --timeout 15000 --exit test/unit/",
     "test:integration": "npm run prep-test && KOA_ENV=test ./node_modules/.bin/mocha --timeout 25000 --exit test/integration/",
     "lint": "eslint src/**/*.js",
