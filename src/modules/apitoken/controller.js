@@ -12,7 +12,7 @@ const bch = new BCH()
 const BCHJS = require('@chris.troutner/bch-js')
 
 // This app is intended to run on the same machine as the mainnet bch-api REST API.
-const bchjs = new BCHJS({ restUrl: `http://localhost:3000/v3/` })
+const bchjs = new BCHJS({ restURL: `http://localhost:3000/v3/` })
 
 let _this
 
