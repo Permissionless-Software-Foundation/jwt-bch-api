@@ -262,7 +262,7 @@ class ApiTokenController {
       // Return the updated credit.
       ctx.body = user.credit
     } catch (err) {
-      if (err.message.indexOf(`No utxos found`) > -1) {
+      if (err.messsage && err.message.indexOf(`No utxos found`) > -1) {
         ctx.throw(
           409,
           'UTXO not found. Try again in a minute or send additional BCH.'
@@ -274,7 +274,7 @@ class ApiTokenController {
       }
 
       console.log(`Error in apitoken/controller.js/updateCredit()`, err)
-      ctx.throw(500)
+      ctx.throw(500, 'Wait a couple minutes before trying again.')
     }
 
     if (next) {
