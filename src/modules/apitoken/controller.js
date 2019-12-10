@@ -196,6 +196,8 @@ class ApiTokenController {
       outObj.isValid = true
       outObj.apiLevel = user.apiLevel
 
+      console.log(`valid: true, apiLevel: ${outObj.apiLevel}, JWT: ${token.slice(-6)}, user: ${user.username}`)
+
       ctx.body = outObj
     } catch (err) {
       console.error(`Error in apitoken/isValid(). Returning false.`)
