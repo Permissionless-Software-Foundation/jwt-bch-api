@@ -84,18 +84,20 @@ class ApiTokenController {
       // Get user data
       const user = ctx.state.user
       // console.log(`user: ${JSON.stringify(user, null, 2)}`)
+      // console.log(`old credit: ${user.credit}`)
 
       // If the user already has a JWT token, calculate a refund for the time
       // they've paid for.
       if (user.apiToken) {
         const refund = _this._calculateRefund(user)
+
+        // console.log(`refund: ${refund}`)
+
         user.credit += refund
       }
 
       // Check against balance.
       if (user.credit < newApiLevel) ctx.throw(402, 'Not enough credit')
-      // TODO: credit for unexpired time from older jot token, before deducting
-      // credit.
 
       // Generate new JWT token.
       const token = apiTokenLib.generateToken(user)
