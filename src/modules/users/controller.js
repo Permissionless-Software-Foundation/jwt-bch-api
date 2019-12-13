@@ -5,7 +5,7 @@ const GetAddress = require('slp-cli-wallet/src/commands/get-address')
 const getAddress = new GetAddress()
 
 const walletFilename = `${__dirname}/../../../config/wallet.json`
-
+// const validator = require('koa-validate').Validator
 /**
  * @api {post} /users Create a new user
  * @apiPermission

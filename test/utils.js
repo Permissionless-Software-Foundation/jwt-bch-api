@@ -27,14 +27,13 @@ async function createUser (userObj) {
       json: true,
       body: {
         user: {
-          username: userObj.username,
+          email: userObj.email,
           password: userObj.password
         }
       }
     }
 
     let result = await rp(options)
-
     const retObj = {
       user: result.body.user,
       token: result.body.token
@@ -57,7 +56,7 @@ async function loginTestUser () {
       resolveWithFullResponse: true,
       json: true,
       body: {
-        username: 'test',
+        email: 'test@test.com',
         password: 'pass'
       }
     }
@@ -73,7 +72,8 @@ async function loginTestUser () {
       apiToken: result.body.user.apiToken,
       bchAddr: result.body.user.bchAddr,
       credit: result.body.user.credit,
-      satBal: result.body.user.satBal
+      satBal: result.body.user.satBal,
+      email: result.body.user.email
     }
 
     return retObj
@@ -97,7 +97,7 @@ async function loginAdminUser () {
       resolveWithFullResponse: true,
       json: true,
       body: {
-        username: adminUserData.username,
+        email: adminUserData.email,
         password: adminUserData.password
       }
     }

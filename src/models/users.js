@@ -2,18 +2,30 @@ const mongoose = require('mongoose')
 const bcrypt = require('bcryptjs')
 const config = require('../../config')
 const jwt = require('jsonwebtoken')
-
 const User = new mongoose.Schema({
   type: { type: String, default: 'user' },
   name: { type: String },
-  username: { type: String, required: true, unique: true },
+  username: { type: String },
   password: { type: String, required: true },
   apiToken: { type: String },
   apiLevel: { type: Number, default: 0 }, // Access level. 0 = public access.
   bchAddr: { type: String }, // BCH address.
   hdIndex: { type: Number }, // Index in the hd wallet associated with this user.
   satBal: { type: Number, default: 0 }, // balance of BCH in satoshis
-  credit: { type: Number, default: 0 } // account credit in USD.
+  credit: { type: Number, default: 0 }, // account credit in USD.
+  email: {
+    type: String,
+    required: true,
+    unique: true,
+    validate: {
+      validator: function (email) {
+        // eslint-disable-next-line no-useless-escape
+        return /^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,3})+$/.test(email)
+      },
+      message: props => `${props.value} is not a valid Email format!`
+    }
+
+  }
 })
 
 User.pre('save', function preSave (next) {
