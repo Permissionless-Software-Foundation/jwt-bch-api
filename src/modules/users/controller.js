@@ -62,6 +62,7 @@ async function createUser (ctx) {
   try {
     await user.save()
   } catch (err) {
+    console.error(`Error: could not save user!`)
     ctx.throw(422, err.message)
   }
 
