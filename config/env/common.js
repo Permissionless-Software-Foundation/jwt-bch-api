@@ -8,6 +8,6 @@ module.exports = {
   jwtExpiration: '30 days', // Sets the default expiration time for newly issued JWT tokens.
   // jwtExpiration: '2 seconds'
   companyAddr: 'bitcoincash:qqpv6qzaawxsgxzqwx28auncr4xupx4njgll0uzw5h',
-  apiServer: 'https://api.bchjs.cash/v3/',
+  apiServer: 'http://localhost:3000/v3/',
   apiJwt: process.env.BCHJSTOKEN
 }
