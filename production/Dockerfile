@@ -29,13 +29,13 @@ RUN echo 'abcd8765' | sudo -S pwd
 
 # Clone the rest.bitcoin.com repository
 WORKDIR /home/safeuser
-RUN git clone https://github.com/christroutner/koa-api-boilerplate
-RUN mv koa-api-boilerplate koa
-RUN mkdir keys
+RUN git clone https://github.com/Permissionless-Software-Foundation/jwt-bch-api
+
+#RUN mkdir keys
 
 # Switch to the desired branch. `master` is usually stable,
 # and `stage` has the most up-to-date changes.
-WORKDIR /home/safeuser/koa
+WORKDIR /home/safeuser/jwt-bch-api
 
 # For development: switch to unstable branch
 # RUN git checkout unstable
@@ -46,7 +46,7 @@ RUN npm install
 # Generate the API docs
 RUN npm run docs
 
-VOLUME /home/safeuser/keys
+#VOLUME /home/safeuser/keys
 
 # Expose the port the API will be served on.
 EXPOSE 5001
