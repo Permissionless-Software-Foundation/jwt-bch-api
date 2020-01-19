@@ -34,6 +34,7 @@ async function createUser (userObj) {
     }
 
     let result = await rp(options)
+
     const retObj = {
       user: result.body.user,
       token: result.body.token
@@ -117,6 +118,7 @@ async function loginAdminUser () {
     console.log(
       'Error authenticating test admin user: ' + JSON.stringify(err, null, 2)
     )
+
     throw err
   }
 }

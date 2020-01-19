@@ -64,4 +64,3 @@ system-user-*.json
 
 # Specific to jwt-bch-api
 wallet.json
-
