@@ -5,7 +5,7 @@ const GetAddress = require('slp-cli-wallet/src/commands/get-address')
 const getAddress = new GetAddress()
 
 const walletFilename = `${__dirname}/../../../config/wallet.json`
-
+// const validator = require('koa-validate').Validator
 /**
  * @api {post} /users Create a new user
  * @apiPermission
@@ -62,6 +62,7 @@ async function createUser (ctx) {
   try {
     await user.save()
   } catch (err) {
+    console.error(`Error: could not save user!`)
     ctx.throw(422, err.message)
   }
 
