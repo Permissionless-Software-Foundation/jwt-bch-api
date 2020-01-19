@@ -1,25 +1,24 @@
 # Start the testnet server with the command 'docker-compose up -d'
 
-koa-mongodb:
-  image: mongo
-  container_name: mongo-koa
+mongo-jwt-auth:
+  image: mongo:4.2-bionic
+  container_name: mongo-jwt-auth
   ports:
     - "5555:27017" # <host port>:<container port>
   volumes:
     - ./database:/data/db
-  command: mongod --smallfiles --logpath=/dev/null # -- quiet
+  command: mongod --logpath=/dev/null # -- quiet
   restart: always
 
-koa:
+jwt-auth-api:
   build: ./production/
   dockerfile: Dockerfile
-  container_name: koa
+  container_name: jwt-auth-api
   links:
-    - koa-mongodb
+    - mongo-jwt-auth
   ports:
     - "5001:5001"  # <host port>:<container port>
   volumes:
-#    - ./logs:/home/coinjoin/consolidating-coinjoin/logs
-    - ./keys:/home/safeuser/keys
-
+    - ./logs:/home/safeuser/jwt-bch-api/logs
+    - ./config:/home/safeuser/jwt-bch-api/config
   restart: always
