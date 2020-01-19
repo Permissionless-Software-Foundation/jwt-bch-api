@@ -6,6 +6,7 @@ const getAddress = new GetAddress()
 
 const walletFilename = `${__dirname}/../../../config/wallet.json`
 // const validator = require('koa-validate').Validator
+
 /**
  * @api {post} /users Create a new user
  * @apiPermission
@@ -44,7 +45,7 @@ const walletFilename = `${__dirname}/../../../config/wallet.json`
  *       "error": "Unprocessable Entity"
  *     }
  */
-//
+
 async function createUser (ctx) {
   const user = new User(ctx.request.body.user)
 

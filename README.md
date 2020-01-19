@@ -1,3 +1,4 @@
+
 # jwt-bch-api
 
 This is a prototype REST API webserver written in node.js and using this
@@ -10,6 +11,7 @@ This very lightweight API server acts as an auth server. It allows:
 - The persistance of user data (models) in a Mongo Database.
 - Users can pay BCH to recieve a JWT token to access a REST API or other web service.
 - REST APIs and web services can quickly query this web server to validate JWT tokens.
+
 
 
 ## Requirements
@@ -77,6 +79,7 @@ Visit `http://localhost:5001/docs/` to view docs
 * [Mocha](https://mochajs.org/)
 * [apidoc](http://apidocjs.com/)
 * [ESLint](http://eslint.org/)
+
 
 ## License
 MIT

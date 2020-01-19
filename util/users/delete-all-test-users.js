@@ -1,7 +1,7 @@
 const mongoose = require('mongoose')
 
 // Force test environment
-process.env.KOA_ENV = 'test'
+process.env.AUTH_ENV = 'test'
 const config = require('../../config')
 
 const User = require('../../src/models/users')
