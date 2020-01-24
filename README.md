@@ -1,6 +1,9 @@
 
 # jwt-bch-api
 
+This repository is forked from [jwt-bch-api in the PSF repository](https://github.com/Permissionless-Software-Foundation/jwt-bch-api). It was forked so the Developer Services team can play with the code and evaluate if it's a good fit for our product plan.
+
+
 This is a prototype REST API webserver written in node.js and using this
 [koa webserver boilerplate app](https://github.com/christroutner/koa-api-boilerplate).
 This prototype back end is intended to be paired with
