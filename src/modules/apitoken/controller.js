@@ -25,21 +25,15 @@ class ApiTokenController {
   }
 
   /**
-   * @api {get} /apitoken/:id Get BCH payment address for user by user id
-   * @apiPermission public
+   * @api {get} /apitoken/bchaddr/:id Get BCH payment address for user by user id
+   * @apiPermission user
    * @apiName GetBchAddr
    * @apiGroup API Token
    *
-   * @apiExample Example usage:
-   * curl -H "Content-Type: application/json" -X GET localhost:5001/apitoken/56bd1da600a526986cf65c80
-   *
-   * @apiSuccess {Object}   bchAddr         String
-   *
-   * @apiSuccessExample {json} Success-Response:
-   *     HTTP/1.1 200 OK
-   *     {
-   *       "bchAddr": "bitcoincash:qr9pnzql9ddh3lt3xcyefss0e7x70pr3ngzms6dun7"
-   *     }
+   * @apiDescription The endpoint is used to get a payment BCH address for the user.
+   * Payment for this user account can be sent to address returned by this endpoint.
+   * However, the update-credit endpoint needs to be called afterward to convert
+   * the BCH into account credit.
    */
   //
   // Given a user GUID, return the BCH payment address for that user.
@@ -70,6 +64,17 @@ class ApiTokenController {
     }
   }
 
+  /**
+   * @api {post} /apitoken/new Request a new JWT token for accessing the API.
+   * @apiPermission user
+   * @apiName GetApiToken
+   * @apiGroup API Token
+   *
+   * @apiDescription This endpoint is used to request a new JWT token for accessing
+   * the Cash Stack API. This endpoint will automatically calculate a refund and
+   * credit the account for an old JWT token, *before* issuing a new JWT token
+   * and debiting the account for the new JWT token.
+   */
   // Request a new API JWT token.
   async newToken (ctx, next) {
     try {
@@ -153,7 +158,7 @@ class ApiTokenController {
       diff = diff / (1000 * 60 * 60 * 24) // Convert to days.
       // console.log(`Time left: ${diff} days`)
 
-      let refund = diff / 30 * oldApiLevel
+      let refund = (diff / 30) * oldApiLevel
 
       if (refund < 0) refund = 0
 
@@ -166,6 +171,16 @@ class ApiTokenController {
     }
   }
 
+  /**
+   * @api {get} /isvalid/:jwt Check if JWT is valid
+   * @apiPermission public
+   * @apiName isValid
+   * @apiGroup API Token
+   *
+   * @apiDescription This endpoint is used by api.fullstack.cash to validate
+   * a JWT token and ensure it has permission to access the requested tier and
+   * rate limits.
+   */
   // Expects an API JWT token as input and returns true or false if it's valid.
   async isValid (ctx, next) {
     // false by default.
@@ -200,7 +215,11 @@ class ApiTokenController {
       outObj.isValid = true
       outObj.apiLevel = user.apiLevel
 
-      console.log(`valid: true, apiLevel: ${outObj.apiLevel}, JWT: ${token.slice(-6)}, user: ${user.username}`)
+      console.log(
+        `valid: true, apiLevel: ${outObj.apiLevel}, JWT: ${token.slice(
+          -6
+        )}, user: ${user.username}`
+      )
 
       ctx.body = outObj
     } catch (err) {
@@ -214,6 +233,17 @@ class ApiTokenController {
     }
   }
 
+  /**
+   * @api {get} /update-credit/:id Update the credit for a a user account
+   * @apiPermission user
+   * @apiName UpdateCredit
+   * @apiGroup API Token
+   *
+   * @apiDescription This endpoint is used to convert BCH into account credit.
+   * The BCH address provided by the /bchaddr/:id endpoint is checked for a
+   * balance. If a balance is found, the BCH is moved to the company wallet and
+   * the user account is credited with the market-value of BCH in USD.
+   */
   async updateCredit (ctx, next) {
     try {
       // Get user data
@@ -284,12 +314,5 @@ class ApiTokenController {
     }
   }
 }
-
-// module.exports = {
-//   getBchAddr,
-//   newToken,
-//   isValid,
-//   updateCredit
-// }
 
 module.exports = ApiTokenController
