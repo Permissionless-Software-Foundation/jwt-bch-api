@@ -10,6 +10,6 @@
 module.exports = {
   session: 'secret-boilerplate-token',
   token: 'secret-jwt-token',
-  database: 'mongodb://172.17.0.1:5555/jwt-bch-api-prod',
+  database: 'mongodb://172.17.0.1:5555/jwt-fullstack-prod',
   env: 'prod'
 }
