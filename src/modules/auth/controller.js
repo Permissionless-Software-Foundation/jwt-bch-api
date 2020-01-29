@@ -20,7 +20,34 @@ const passport = require('koa-passport')
  * @apiParam {String} username  User username.
  * @apiParam {String} password  User password.
  *
- * @apiExample Example usage:
+ * @apiExample {js} JavaScript Example:
+ * const options = {
+ *   method: "POST",
+ *   url: `http://localhost:5001/auth`,
+ *   data: {
+ *     email: "test@test.com",
+ *     password: "test"
+ *   }
+ * };
+ *
+ * const result = await axios.request(options);
+ * console.log(`result.data: ${JSON.stringify(result.data, null, 2)}`);
+ * //   {
+ * //     "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjVlMzEwNTBjMzdjMGQyM2MwZmIxYjFiYyIsImlhdCI6MTU4MDI3MjI2Mn0.FZM2cvsz_szMR9nNWVQhZ5o_7rV9Lq1l8xE9zMrZ7JQ",
+ * //     "user": {
+ * //     "type": "user",
+ * //     "apiLevel": 0,
+ * //     "satBal": 0,
+ * //     "credit": 0,
+ * //     "_id": "5e31050c37c0d23c0fb1b1bc",
+ * //     "email": "test@test.com",
+ * //     "hdIndex": 8,
+ * //     "bchAddr": "bitcoincash:qrr2antjd287pf4gzcnhkx9stfnswm5acumhergkl4",
+ * //     "__v": 0,
+ * //     "apiToken": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjVlMzEwNTBjMzdjMGQyM2MwZmIxYjFiYyIsImlhdCI6MTU4MDI3MjI1NiwiZXhwIjoxNTgyODY0MjU2fQ.E4je3pFpp1PRgTyKQ-HK1KIsrBLCXm8OhrHXwewl2Ak"
+ * //   }
+ *
+ * @apiExample {curl} curl Example:
  * curl -H "Content-Type: application/json" -X POST -d '{ "username": "johndoe@gmail.com", "password": "foo" }' localhost:5000/auth
  *
  * @apiSuccess {Object}   user           User object

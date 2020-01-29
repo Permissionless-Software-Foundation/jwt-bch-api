@@ -26,5 +26,10 @@ module.exports.routes = [
     method: 'GET',
     route: '/update-credit/:id',
     handlers: [validator.ensureUser, apiTokenController.updateCredit]
+  },
+  {
+    method: 'GET',
+    route: '/',
+    handlers: [validator.ensureUser, apiTokenController.getExistingToken]
   }
 ]
