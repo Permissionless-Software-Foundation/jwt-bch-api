@@ -560,6 +560,8 @@ describe('API Token', () => {
 
       assert.isString(apiToken)
     })
+
+    // TODO: It should return false if the user has no JWT token.
   })
 })
 

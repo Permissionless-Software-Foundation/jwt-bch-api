@@ -322,15 +322,37 @@ class ApiTokenController {
    *
    * @apiDescription This endpoint is used to retrieve the current API JWT token
    * issued to the user.
+   *
+   * @apiExample {js} Example usage:
+   * const user = await loginUser()
+   *
+   * const options = {
+   *   method: "get",
+   *   url: "http://localhost:5001/apitoken/",
+   *   headers: { Authorization: `Bearer ${user.token}` }
+   * }
+   *
+   * const response = await axios.request(options)
+   * console.log(response.data.apiToken)
+   * // "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjVlMzEwNTBjMzdjMGQyM2MwZmIxYjFiYyIsImlhdCI6MTU4MDI3MjI1NiwiZXhwIjoxNTgyODY0MjU2fQ.E4je3pFpp1PRgTyKQ-HK1KIsrBLCXm8OhrHXwewl2Ak"
    */
   async getExistingToken (ctx, next) {
     try {
       // Get user data
       const user = ctx.state.user
-      // console.log(`user: ${JSON.stringify(user, null, 2)}`)
+      console.log(`user: ${JSON.stringify(user, null, 2)}`)
 
-      ctx.body = {
-        apiToken: user.apiToken
+      // If user has not yet generated an API token.
+      if (!user.apiToken) {
+        ctx.body = {
+          apiToken: false
+        }
+
+      // Normal path
+      } else {
+        ctx.body = {
+          apiToken: user.apiToken
+        }
       }
     } catch (err) {
       if (err.status) ctx.throw(err.status, err.message)
