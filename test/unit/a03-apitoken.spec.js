@@ -498,6 +498,69 @@ describe('API Token', () => {
       assert.isAbove(credit, startCredit)
     })
   })
+
+  describe('GET /', () => {
+    it('should throw 401 error if auth header is missing', async () => {
+      try {
+        const options = {
+          method: 'GET',
+          uri: `${LOCALHOST}/apitoken/`,
+          resolveWithFullResponse: true,
+          json: true,
+          headers: {
+            Accept: 'application/json'
+          }
+        }
+
+        await rp(options)
+        assert.equal(true, false, 'Unexpected behavior')
+      } catch (err) {
+        assert.equal(err.statusCode, 401)
+      }
+    })
+
+    it('should throw 401 error if token is invalid', async () => {
+      try {
+        const options = {
+          method: 'GET',
+          uri: `${LOCALHOST}/apitoken/`,
+          resolveWithFullResponse: true,
+          json: true,
+          headers: {
+            Accept: 'application/json',
+            Authorization: `Bearer 1`
+          }
+        }
+
+        await rp(options)
+        assert.equal(true, false, 'Unexpected behavior')
+      } catch (err) {
+        assert.equal(err.statusCode, 401)
+      }
+    })
+
+    it('should return the users existing API token.', async () => {
+      const token = context.testUser.token
+
+      const options = {
+        method: 'GET',
+        uri: `${LOCALHOST}/apitoken/`,
+        resolveWithFullResponse: true,
+        json: true,
+        headers: {
+          Accept: 'application/json',
+          Authorization: `Bearer ${token}`
+        }
+      }
+
+      const result = await rp(options)
+
+      const apiToken = result.body.apiToken
+      // console.log(`apiToken: ${apiToken}`)
+
+      assert.isString(apiToken)
+    })
+  })
 })
 
 function sleep (ms) {

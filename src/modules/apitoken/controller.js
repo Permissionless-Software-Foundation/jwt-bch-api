@@ -44,7 +44,7 @@ class ApiTokenController {
       if (!user) {
         ctx.throw(404)
       }
-      // console.log(`user: ${JSON.stringify(user, null, 2)}`)
+      // wlogger.error(`user: ${JSON.stringify(user, null, 2)}`)
 
       // Return the BCH address
       ctx.body = {
@@ -55,7 +55,7 @@ class ApiTokenController {
         ctx.throw(404)
       }
 
-      console.log(`Error in apitoken/controller.js/getBchAddr()`, err)
+      wlogger.error(`Error in apitoken/controller.js/getBchAddr()`, err)
       ctx.throw(500)
     }
 
@@ -131,7 +131,7 @@ class ApiTokenController {
     } catch (err) {
       if (err.status) ctx.throw(err.status, err.message)
 
-      console.log(`Error in apitoken/controller.js/newToken()`, err)
+      wlogger.error(`Error in apitoken/controller.js/newToken()`, err)
       ctx.throw(500)
     }
 
@@ -305,8 +305,38 @@ class ApiTokenController {
         ctx.throw(404)
       }
 
-      console.log(`Error in apitoken/controller.js/updateCredit()`, err)
+      wlogger.error(`Error in apitoken/controller.js/updateCredit()`, err)
       ctx.throw(500, 'Wait a couple minutes before trying again.')
+    }
+
+    if (next) {
+      return next()
+    }
+  }
+
+  /**
+   * @api {get} / Get existing API token for user
+   * @apiPermission user
+   * @apiName GetToken
+   * @apiGroup API Token
+   *
+   * @apiDescription This endpoint is used to retrieve the current API JWT token
+   * issued to the user.
+   */
+  async getExistingToken (ctx, next) {
+    try {
+      // Get user data
+      const user = ctx.state.user
+      // console.log(`user: ${JSON.stringify(user, null, 2)}`)
+
+      ctx.body = {
+        apiToken: user.apiToken
+      }
+    } catch (err) {
+      if (err.status) ctx.throw(err.status, err.message)
+
+      wlogger.error(`Error in apitoken/controller.js/getExistingToken()`, err)
+      ctx.throw(500)
     }
 
     if (next) {
