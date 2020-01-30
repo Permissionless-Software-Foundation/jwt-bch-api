@@ -7,14 +7,18 @@
 
 const config = require('../../config')
 const jwt = require('jsonwebtoken')
+const KeyEncoder = require('key-encoder').default
+const keyEncoder = new KeyEncoder('secp256k1')
 
 // Generate a JWT token, given an user model as input.
 function generateToken (user) {
   const jwtOptions = {
-    expiresIn: config.jwtExpiration
+    expiresIn: config.jwtExpiration,
+    algorithm: 'ES256'
   }
 
-  const token = jwt.sign({ id: user.id }, config.token, jwtOptions)
+  const pemPrivateKey = keyEncoder.encodePrivate(config.privateKey, 'raw', 'pem')
+  const token = jwt.sign({ id: user.id }, pemPrivateKey, jwtOptions)
   // console.log(`config.token: ${config.token}`)
   // console.log(`generated token: ${token}`)
   return token

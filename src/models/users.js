@@ -2,6 +2,8 @@ const mongoose = require('mongoose')
 const bcrypt = require('bcryptjs')
 const config = require('../../config')
 const jwt = require('jsonwebtoken')
+const KeyEncoder = require('key-encoder').default
+const keyEncoder = new KeyEncoder('secp256k1')
 
 const User = new mongoose.Schema({
   type: { type: String, default: 'user' },
@@ -75,7 +77,8 @@ User.methods.validatePassword = function validatePassword (password) {
 User.methods.generateToken = function generateToken () {
   const user = this
 
-  const token = jwt.sign({ id: user.id }, config.token)
+  const pemPrivateKey = keyEncoder.encodePrivate(config.privateKey, 'raw', 'pem')
+  const token = jwt.sign({ id: user.id }, pemPrivateKey, { algorithm: 'ES256' })
   // console.log(`config.token: ${config.token}`)
   // console.log(`generated token: ${token}`)
   return token
