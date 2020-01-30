@@ -17,8 +17,14 @@ function generateToken (user) {
     algorithm: 'ES256'
   }
 
+  const jwtPayload = {
+    id: user.id,
+    apiLevel: user.apiLevel,
+    rateLimit: user.rateLimit
+  }
+
   const pemPrivateKey = keyEncoder.encodePrivate(config.privateKey, 'raw', 'pem')
-  const token = jwt.sign({ id: user.id }, pemPrivateKey, jwtOptions)
+  const token = jwt.sign(jwtPayload, pemPrivateKey, jwtOptions)
   // console.log(`config.token: ${config.token}`)
   // console.log(`generated token: ${token}`)
   return token

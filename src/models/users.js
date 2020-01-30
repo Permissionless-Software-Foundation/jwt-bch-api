@@ -12,6 +12,7 @@ const User = new mongoose.Schema({
   password: { type: String, required: true },
   apiToken: { type: String },
   apiLevel: { type: Number, default: 0 }, // Access level. 0 = public access.
+  rateLimit: { type: Number, default: 10 }, // Requests per minute
   bchAddr: { type: String }, // BCH address.
   hdIndex: { type: Number }, // Index in the hd wallet associated with this user.
   satBal: { type: Number, default: 0 }, // balance of BCH in satoshis
@@ -77,8 +78,19 @@ User.methods.validatePassword = function validatePassword (password) {
 User.methods.generateToken = function generateToken () {
   const user = this
 
+  const jwtOptions = {
+    expiresIn: config.jwtExpiration,
+    algorithm: 'ES256'
+  }
+
+  const jwtPayload = {
+    id: user.id,
+    apiLevel: user.apiLevel,
+    rateLimit: user.rateLimit
+  }
+
   const pemPrivateKey = keyEncoder.encodePrivate(config.privateKey, 'raw', 'pem')
-  const token = jwt.sign({ id: user.id }, pemPrivateKey, { algorithm: 'ES256' })
+  const token = jwt.sign(jwtPayload, pemPrivateKey, jwtOptions)
   // console.log(`config.token: ${config.token}`)
   // console.log(`generated token: ${token}`)
   return token
