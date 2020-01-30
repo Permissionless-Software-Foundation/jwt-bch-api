@@ -100,8 +100,6 @@ User.methods.generateToken = function generateToken () {
       rateLimit: user.rateLimit
     }
 
-    console.log(`config.privateKey: ${config.privateKey}`)
-
     const pemPrivateKey = keyEncoder.encodePrivate(
       config.privateKey,
       'raw',
