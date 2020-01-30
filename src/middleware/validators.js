@@ -6,6 +6,10 @@ const wlogger = require('../lib/wlogger')
 const KeyEncoder = require('key-encoder').default
 const keyEncoder = new KeyEncoder('secp256k1')
 
+const jwtOptions = {
+  algorithms: ['ES256']
+}
+
 async function ensureUser (ctx, next) {
   try {
     // console.log(`getToken: ${typeof (getToken)}`)
@@ -20,7 +24,7 @@ async function ensureUser (ctx, next) {
     try {
       console.log(`token: ${JSON.stringify(token, null, 2)}`)
       console.log(`config: ${JSON.stringify(config, null, 2)}`)
-      decoded = jwt.verify(token, config.publicKey)
+      decoded = jwt.verify(token, config.publicKey, jwtOptions)
     } catch (err) {
       console.log(`Err: Token could not be decoded: ${err}`)
       ctx.throw(401)
@@ -34,7 +38,7 @@ async function ensureUser (ctx, next) {
 
     return next()
   } catch (err) {
-    wlogger.error(`Error in src/middleware/validators.js/ensureUser()`, err)
+    wlogger.error(`Error in src/middleware/validators.js/ensureUser(): `, err)
     throw err
   }
 }
@@ -60,7 +64,7 @@ async function ensureAdmin (ctx, next) {
         'raw',
         'pem'
       )
-      decoded = jwt.verify(token, pemPublicKey)
+      decoded = jwt.verify(token, pemPublicKey, jwtOptions)
     } catch (err) {
       // console.log(`Err: Token could not be decoded: ${err}`)
       ctx.throw(401)
@@ -111,7 +115,7 @@ async function ensureTargetUserOrAdmin (ctx, next) {
         'raw',
         'pem'
       )
-      decoded = jwt.verify(token, pemPublicKey)
+      decoded = jwt.verify(token, pemPublicKey, jwtOptions)
     } catch (err) {
       // console.log(`Err: Token could not be decoded: ${err}`)
       ctx.throw(401)
