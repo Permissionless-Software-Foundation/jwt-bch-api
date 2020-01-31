@@ -32,7 +32,7 @@
   },
   "repository": "Permissionless-Software-Foundation/jwt-bch-api",
   "dependencies": {
-    "@chris.troutner/bch-js": "^2.1.0",
+    "@chris.troutner/bch-js": "^2.3.1",
     "apidoc": "^0.17.7",
     "bcryptjs": "^2.4.3",
     "glob": "^7.0.0",

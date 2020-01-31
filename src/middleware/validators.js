@@ -6,67 +6,85 @@ const wlogger = require('../lib/wlogger')
 const KeyEncoder = require('key-encoder').default
 const keyEncoder = new KeyEncoder('secp256k1')
 
+const jwtOptions = {
+  algorithms: ['ES256']
+}
+
 async function ensureUser (ctx, next) {
-  // console.log(`getToken: ${typeof (getToken)}`)
-  const token = getToken(ctx)
-
-  if (!token) {
-    // console.log(`Err: Token not provided.`)
-    ctx.throw(401)
-  }
-
-  let decoded = null
   try {
-    // console.log(`token: ${JSON.stringify(token, null, 2)}`)
-    // console.log(`config: ${JSON.stringify(config, null, 2)}`)
-    decoded = jwt.verify(token, config.publicKey)
+    // console.log(`getToken: ${typeof (getToken)}`)
+    const token = getToken(ctx)
+
+    if (!token) {
+      // console.log(`Err: Token not provided.`)
+      ctx.throw(401)
+    }
+
+    let decoded = null
+    try {
+      console.log(`token: ${JSON.stringify(token, null, 2)}`)
+      console.log(`config: ${JSON.stringify(config, null, 2)}`)
+      decoded = jwt.verify(token, config.publicKey, jwtOptions)
+    } catch (err) {
+      console.log(`Err: Token could not be decoded: ${err}`)
+      ctx.throw(401)
+    }
+
+    ctx.state.user = await User.findById(decoded.id, '-password')
+    if (!ctx.state.user) {
+      // console.log(`Err: Could not find user.`)
+      ctx.throw(401)
+    }
+
+    return next()
   } catch (err) {
-    // console.log(`Err: Token could not be decoded: ${err}`)
-    ctx.throw(401)
+    wlogger.error(`Error in src/middleware/validators.js/ensureUser(): `, err)
+    throw err
   }
-
-  ctx.state.user = await User.findById(decoded.id, '-password')
-  if (!ctx.state.user) {
-    // console.log(`Err: Could not find user.`)
-    ctx.throw(401)
-  }
-
-  return next()
 }
 
 // This funciton is almost identical to ensureUser, except at the end, it verifies
 // that the 'type' associated with the user equals 'admin'.
 async function ensureAdmin (ctx, next) {
-  // console.log(`getToken: ${typeof (getToken)}`)
-  const token = getToken(ctx)
-
-  if (!token) {
-    // console.log(`Err: Token not provided.`)
-    ctx.throw(401)
-  }
-
-  let decoded = null
   try {
-    // console.log(`token: ${JSON.stringify(token, null, 2)}`)
-    // console.log(`config: ${JSON.stringify(config, null, 2)}`)
-    const pemPublicKey = keyEncoder.encodePublic(config.publicKey, 'raw', 'pem')
-    decoded = jwt.verify(token, pemPublicKey)
+    // console.log(`getToken: ${typeof (getToken)}`)
+    const token = getToken(ctx)
+
+    if (!token) {
+      // console.log(`Err: Token not provided.`)
+      ctx.throw(401)
+    }
+
+    let decoded = null
+    try {
+      // console.log(`token: ${JSON.stringify(token, null, 2)}`)
+      // console.log(`config: ${JSON.stringify(config, null, 2)}`)
+      const pemPublicKey = keyEncoder.encodePublic(
+        config.publicKey,
+        'raw',
+        'pem'
+      )
+      decoded = jwt.verify(token, pemPublicKey, jwtOptions)
+    } catch (err) {
+      // console.log(`Err: Token could not be decoded: ${err}`)
+      ctx.throw(401)
+    }
+
+    ctx.state.user = await User.findById(decoded.id, '-password')
+    if (!ctx.state.user) {
+      // console.log(`Err: Could not find user.`)
+      ctx.throw(401)
+    }
+
+    if (ctx.state.user.type !== 'admin') {
+      ctx.throw(401, 'not admin')
+    }
+
+    return next()
   } catch (err) {
-    // console.log(`Err: Token could not be decoded: ${err}`)
-    ctx.throw(401)
+    wlogger.error(`Error in src/middleware/validators.js/ensureAdmin()`)
+    throw err
   }
-
-  ctx.state.user = await User.findById(decoded.id, '-password')
-  if (!ctx.state.user) {
-    // console.log(`Err: Could not find user.`)
-    ctx.throw(401)
-  }
-
-  if (ctx.state.user.type !== 'admin') {
-    ctx.throw(401, 'not admin')
-  }
-
-  return next()
 }
 
 // This middleware ensures that the :id used in the API endpoint matches the
@@ -75,53 +93,64 @@ async function ensureAdmin (ctx, next) {
 // profiles or non-admins deleting users.
 // TODO Tests must be developed before developing this function.
 async function ensureTargetUserOrAdmin (ctx, next) {
-  // console.log(`getToken: ${typeof (getToken)}`)
-  const token = getToken(ctx)
-
-  if (!token) {
-    // console.log(`Err: Token not provided.`)
-    ctx.throw(401)
-  }
-
-  // The user ID targeted in this API call.
-  const targetId = ctx.params.id
-  // console.log(`targetId: ${JSON.stringify(targetId, null, 2)}`)
-
-  let decoded = null
   try {
-    // console.log(`token: ${JSON.stringify(token, null, 2)}`)
-    // console.log(`config: ${JSON.stringify(config, null, 2)}`)
-    const pemPublicKey = keyEncoder.encodePublic(config.publicKey, 'raw', 'pem')
-    decoded = jwt.verify(token, pemPublicKey)
-  } catch (err) {
-    // console.log(`Err: Token could not be decoded: ${err}`)
-    ctx.throw(401)
-  }
+    // console.log(`getToken: ${typeof (getToken)}`)
+    const token = getToken(ctx)
 
-  ctx.state.user = await User.findById(decoded.id, '-password')
-  if (!ctx.state.user) {
-    // console.log(`Err: Could not find user.`)
-    ctx.throw(401)
-  }
-
-  // console.log(`ctx.state.user: ${JSON.stringify(ctx.state.user, null, 2)}`)
-  // Ensure the calling user and the target user are the same.
-  if (ctx.state.user._id.toString() !== targetId.toString()) {
-    wlogger.verbose(
-      `Calling user and target user do not match! Calling user: ${
-        ctx.state.user._id
-      }, Target user: ${targetId}`
-    )
-
-    // If they don't match, then the calling user better be an admin.
-    if (ctx.state.user.type !== 'admin') {
-      ctx.throw(401, 'not admin')
-    } else {
-      wlogger.verbose(`It's ok. The user is an admin.`)
+    if (!token) {
+      // console.log(`Err: Token not provided.`)
+      ctx.throw(401)
     }
-  }
 
-  return next()
+    // The user ID targeted in this API call.
+    const targetId = ctx.params.id
+    // console.log(`targetId: ${JSON.stringify(targetId, null, 2)}`)
+
+    let decoded = null
+    try {
+      // console.log(`token: ${JSON.stringify(token, null, 2)}`)
+      // console.log(`config: ${JSON.stringify(config, null, 2)}`)
+      const pemPublicKey = keyEncoder.encodePublic(
+        config.publicKey,
+        'raw',
+        'pem'
+      )
+      decoded = jwt.verify(token, pemPublicKey, jwtOptions)
+    } catch (err) {
+      // console.log(`Err: Token could not be decoded: ${err}`)
+      ctx.throw(401)
+    }
+
+    ctx.state.user = await User.findById(decoded.id, '-password')
+    if (!ctx.state.user) {
+      // console.log(`Err: Could not find user.`)
+      ctx.throw(401)
+    }
+
+    // console.log(`ctx.state.user: ${JSON.stringify(ctx.state.user, null, 2)}`)
+    // Ensure the calling user and the target user are the same.
+    if (ctx.state.user._id.toString() !== targetId.toString()) {
+      wlogger.verbose(
+        `Calling user and target user do not match! Calling user: ${
+          ctx.state.user._id
+        }, Target user: ${targetId}`
+      )
+
+      // If they don't match, then the calling user better be an admin.
+      if (ctx.state.user.type !== 'admin') {
+        ctx.throw(401, 'not admin')
+      } else {
+        wlogger.verbose(`It's ok. The user is an admin.`)
+      }
+    }
+
+    return next()
+  } catch (err) {
+    wlogger.error(
+      `Error in src/middleware/validators.js/ensureTargetUserOrAdmin()`
+    )
+    throw err
+  }
 }
 
 module.exports = {

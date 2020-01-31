@@ -4,6 +4,7 @@ const config = require('../../config')
 const jwt = require('jsonwebtoken')
 const KeyEncoder = require('key-encoder').default
 const keyEncoder = new KeyEncoder('secp256k1')
+const wlogger = require('../lib/wlogger')
 
 const User = new mongoose.Schema({
   type: { type: String, default: 'user' },
@@ -28,72 +29,90 @@ const User = new mongoose.Schema({
       },
       message: props => `${props.value} is not a valid Email format!`
     }
-
   }
 })
 
 User.pre('save', function preSave (next) {
-  const user = this
+  try {
+    const user = this
 
-  if (!user.isModified('password')) {
-    return next()
-  }
+    if (!user.isModified('password')) {
+      return next()
+    }
 
-  new Promise((resolve, reject) => {
-    bcrypt.genSalt(10, (err, salt) => {
-      if (err) {
-        return reject(err)
-      }
-      resolve(salt)
-    })
-  })
-    .then(salt => {
-      bcrypt.hash(user.password, salt, (err, hash) => {
+    new Promise((resolve, reject) => {
+      bcrypt.genSalt(10, (err, salt) => {
         if (err) {
-          throw new Error(err)
+          return reject(err)
         }
-
-        user.password = hash
-
-        next(null)
+        resolve(salt)
       })
     })
-    .catch(err => next(err))
+      .then(salt => {
+        bcrypt.hash(user.password, salt, (err, hash) => {
+          if (err) {
+            throw new Error(err)
+          }
+
+          user.password = hash
+
+          next(null)
+        })
+      })
+      .catch(err => next(err))
+  } catch (err) {
+    wlogger.error(`Error in models/users.js/pre-save()`)
+    throw err
+  }
 })
 
 User.methods.validatePassword = function validatePassword (password) {
-  const user = this
+  try {
+    const user = this
 
-  return new Promise((resolve, reject) => {
-    bcrypt.compare(password, user.password, (err, isMatch) => {
-      if (err) {
-        return reject(err)
-      }
+    return new Promise((resolve, reject) => {
+      bcrypt.compare(password, user.password, (err, isMatch) => {
+        if (err) {
+          return reject(err)
+        }
 
-      resolve(isMatch)
+        resolve(isMatch)
+      })
     })
-  })
+  } catch (err) {
+    wlogger.error(`Error in models/users.js/validatePassword()`)
+    throw err
+  }
 }
 
 User.methods.generateToken = function generateToken () {
-  const user = this
+  try {
+    const user = this
 
-  const jwtOptions = {
-    expiresIn: config.jwtExpiration,
-    algorithm: 'ES256'
+    const jwtOptions = {
+      expiresIn: config.jwtExpiration,
+      algorithm: 'ES256'
+    }
+
+    const jwtPayload = {
+      id: user.id,
+      apiLevel: user.apiLevel,
+      rateLimit: user.rateLimit
+    }
+
+    const pemPrivateKey = keyEncoder.encodePrivate(
+      config.privateKey,
+      'raw',
+      'pem'
+    )
+    const token = jwt.sign(jwtPayload, pemPrivateKey, jwtOptions)
+    // console.log(`config.token: ${config.token}`)
+    // console.log(`generated token: ${token}`)
+    return token
+  } catch (err) {
+    wlogger.error(`Error in models/user.js/generateToken()`)
+    throw err
   }
-
-  const jwtPayload = {
-    id: user.id,
-    apiLevel: user.apiLevel,
-    rateLimit: user.rateLimit
-  }
-
-  const pemPrivateKey = keyEncoder.encodePrivate(config.privateKey, 'raw', 'pem')
-  const token = jwt.sign(jwtPayload, pemPrivateKey, jwtOptions)
-  // console.log(`config.token: ${config.token}`)
-  // console.log(`generated token: ${token}`)
-  return token
 }
 
 // export default mongoose.model('user', User)

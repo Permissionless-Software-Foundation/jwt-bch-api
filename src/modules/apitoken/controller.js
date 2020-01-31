@@ -37,6 +37,7 @@ class ApiTokenController {
    */
   //
   // Given a user GUID, return the BCH payment address for that user.
+
   async getBchAddr (ctx, next) {
     try {
       // Get user data
