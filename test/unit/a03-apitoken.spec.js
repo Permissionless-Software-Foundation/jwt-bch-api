@@ -23,7 +23,7 @@ describe('API Token', () => {
 
   before(async () => {
     context.testUser = await testUtils.loginTestUser()
-    // console.log(`context.testUser: ${JSON.stringify(context.testUser, null, 2)}`)
+    console.log(`context.testUser: ${JSON.stringify(context.testUser, null, 2)}`)
 
     // Get the JWT used to log in as the admin 'system' user.
     const adminJWT = await testUtils.getAdminJWT()
