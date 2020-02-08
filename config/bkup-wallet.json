@@ -1,9 +1,18 @@
 {
   "network": "mainnet",
-  "mnemonic": "reopen nuclear cloud resist video parrot dose flavor step lucky account muffin",
-  "derivation": 245,
-  "rootAddress": "bitcoincash:qr9pnzql9ddh3lt3xcyefss0e7x70pr3ngzms6dun7",
+  "mnemonic": "amused prefer nice wild neither mean expose pet safe rate define inform",
+  "derivation": 145,
   "balance": 0,
-  "nextAddress": 1,
-  "hasBalance": []
+  "nextAddress": 2,
+  "hasBalance": [],
+  "addresses": [
+    [
+      0,
+      "bitcoincash:qqvh0sj9lxphdzf2s5esxtdjh2gnyfs6vskjz5f8hd"
+    ],
+    [
+      1,
+      "bitcoincash:qqwkpspsm08pxkcmw0xug05cwxpaqlg4wyy2565w4t"
+    ]
+  ]
 }

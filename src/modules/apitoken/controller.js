@@ -3,6 +3,9 @@ const apiTokenLib = require('../../lib/api-token')
 const config = require('../../../config')
 const jwt = require('jsonwebtoken')
 
+const KeyEncoder = require('key-encoder').default
+const keyEncoder = new KeyEncoder('secp256k1')
+
 const wlogger = require('../../lib/wlogger')
 
 // Business logic library for dealing with BCH.
@@ -37,6 +40,7 @@ class ApiTokenController {
    */
   //
   // Given a user GUID, return the BCH payment address for that user.
+
   async getBchAddr (ctx, next) {
     try {
       // Get user data
@@ -193,8 +197,18 @@ class ApiTokenController {
       const token = ctx.params.jwt
       // console.log(`token: ${token}`)
 
+      const jwtOptions = {
+        algorithms: ['ES256']
+      }
+
+      const pemPublicKey = keyEncoder.encodePublic(
+        config.publicKey,
+        'raw',
+        'pem'
+      )
+
       // Validate the JWT token.
-      const decoded = jwt.verify(token, config.token)
+      const decoded = jwt.verify(token, pemPublicKey, jwtOptions)
       // console.log(`decoded: ${JSON.stringify(decoded, null, 2)}`)
 
       // Get user data

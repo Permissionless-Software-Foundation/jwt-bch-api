@@ -38,7 +38,8 @@ async function createSystemUser () {
       body: {
         user: {
           email: 'system@system.com',
-          password: context.password
+          password: context.password,
+          _id: '5e3314136772a049f40a45a0'
         }
       }
     }
