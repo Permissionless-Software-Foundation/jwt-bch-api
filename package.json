@@ -49,6 +49,7 @@
     "koa-router": "^7.0.1",
     "koa-static": "^5.0.0",
     "mongoose": "^5.7.5",
+    "nodemailer": "^6.4.2",
     "p-retry": "^4.1.0",
     "passport-local": "^1.0.0",
     "request": "^2.85.0",
