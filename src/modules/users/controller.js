@@ -1,12 +1,12 @@
 const User = require('../../models/users')
-// const util = require('../../lib/utils/json-files')
-//
-// const wlogger = require('../../lib/wlogger')
-//
-// const GetAddress = require('slp-cli-wallet/src/commands/get-address')
-// const getAddress = new GetAddress()
-//
-// const walletFilename = `${__dirname}/../../../config/wallet.json`
+const util = require('../../lib/utils/json-files')
+
+const wlogger = require('../../lib/wlogger')
+
+const GetAddress = require('slp-cli-wallet/src/commands/get-address')
+const getAddress = new GetAddress()
+
+const walletFilename = `${__dirname}/../../../config/wallet.json`
 // const validator = require('koa-validate').Validator
 
 let _this
@@ -14,6 +14,8 @@ class UserController {
   constructor () {
     _this = this
     this.User = User
+    this.util = util
+    this.getAddress = getAddress
   }
 
   /**
@@ -80,6 +82,14 @@ class UserController {
       // Enforce default value of 'user'
       user.type = 'user'
 
+      // Get the HD index for the next wallet address.
+      const walletData = await _this.util.readJSON(walletFilename)
+      // console.log(`walletData: ${JSON.stringify(walletData, null, 2)}`)
+      user.hdIndex = walletData.nextAddress
+
+      // Generate a BCH address for this user.
+      user.bchAddr = await _this.getAddress.getAddress(walletFilename)
+
       await user.save()
 
       const token = user.generateToken()
@@ -92,6 +102,7 @@ class UserController {
         token
       }
     } catch (err) {
+      wlogger.debug(`createUser() returning error: `, err.message)
       ctx.throw(422, err.message)
     }
   }

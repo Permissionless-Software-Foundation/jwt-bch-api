@@ -34,7 +34,7 @@ async function ensureUser (ctx, next) {
       )
       decoded = jwt.verify(token, pemPublicKey, jwtOptions)
     } catch (err) {
-      console.log(`Err: Token could not be decoded: ${err}`)
+      wlogger.debug(`Err: Token could not be decoded: ${err}`)
       ctx.throw(401)
     }
 
@@ -46,7 +46,7 @@ async function ensureUser (ctx, next) {
 
     return next()
   } catch (err) {
-    wlogger.error('Error in src/middleware/validators.js/ensureUser(): ', err)
+    wlogger.debug('Error in src/middleware/validators.js/ensureUser(): ', err)
     throw err
   }
 }
@@ -90,7 +90,7 @@ async function ensureAdmin (ctx, next) {
 
     return next()
   } catch (err) {
-    wlogger.error('Error in src/middleware/validators.js/ensureAdmin()')
+    wlogger.debug('Error in src/middleware/validators.js/ensureAdmin()')
     throw err
   }
 }
@@ -146,13 +146,13 @@ async function ensureTargetUserOrAdmin (ctx, next) {
       if (ctx.state.user.type !== 'admin') {
         ctx.throw(401, 'not admin')
       } else {
-        wlogger.verbose('It\'s ok. The user is an admin.')
+        wlogger.verbose("It's ok. The user is an admin.")
       }
     }
 
     return next()
   } catch (err) {
-    wlogger.error(
+    wlogger.debug(
       'Error in src/middleware/validators.js/ensureTargetUserOrAdmin()'
     )
 

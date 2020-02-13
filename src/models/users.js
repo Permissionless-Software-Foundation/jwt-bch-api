@@ -14,9 +14,9 @@ const User = new mongoose.Schema({
 
   apiToken: { type: String },
   apiLevel: { type: Number, default: 0 }, // Access level. 0 = public access.
-  rateLimit: { type: Number, default: 10 }, // Requests per minute
-  bchAddr: { type: String }, // BCH address.
-  hdIndex: { type: Number }, // Index in the hd wallet associated with this user.
+  rateLimit: { type: Number, default: 3 }, // Requests per minute
+  bchAddr: { type: String, defaut: '' }, // BCH address.
+  hdIndex: { type: Number, default: 1 }, // Index in the hd wallet associated with this user.
   satBal: { type: Number, default: 0 }, // balance of BCH in satoshis
   credit: { type: Number, default: 0 }, // account credit in USD.
 
