@@ -24,10 +24,10 @@ async function startServer () {
   // Connect to the Mongo Database.
   mongoose.Promise = global.Promise
   mongoose.set('useCreateIndex', true) // Stop deprecation warning.
-  await mongoose.connect(
-    config.database,
-    { useNewUrlParser: true, useUnifiedTopology: true }
-  )
+  await mongoose.connect(config.database, {
+    useUnifiedTopology: true,
+    useNewUrlParser: true
+  })
 
   // MIDDLEWARE START
 
@@ -38,6 +38,9 @@ async function startServer () {
 
   // Used to generate the docs.
   app.use(mount('/', serve(`${process.cwd()}/docs`)))
+
+  // Mount the page for displaying logs.
+  app.use(mount('/logs', serve(`${process.cwd()}/config/logs`)))
 
   // User Authentication
   require('../config/passport')
@@ -62,7 +65,7 @@ async function startServer () {
 
   // Create the system admin user.
   const success = await adminLib.createSystemUser()
-  if (success) console.log(`System admin user created.`)
+  if (success) console.log('System admin user created.')
 
   return app
 }

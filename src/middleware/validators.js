@@ -46,7 +46,7 @@ async function ensureUser (ctx, next) {
 
     return next()
   } catch (err) {
-    wlogger.error(`Error in src/middleware/validators.js/ensureUser(): `, err)
+    wlogger.error('Error in src/middleware/validators.js/ensureUser(): ', err)
     throw err
   }
 }
@@ -90,7 +90,7 @@ async function ensureAdmin (ctx, next) {
 
     return next()
   } catch (err) {
-    wlogger.error(`Error in src/middleware/validators.js/ensureAdmin()`)
+    wlogger.error('Error in src/middleware/validators.js/ensureAdmin()')
     throw err
   }
 }
@@ -139,24 +139,23 @@ async function ensureTargetUserOrAdmin (ctx, next) {
     // Ensure the calling user and the target user are the same.
     if (ctx.state.user._id.toString() !== targetId.toString()) {
       wlogger.verbose(
-        `Calling user and target user do not match! Calling user: ${
-          ctx.state.user._id
-        }, Target user: ${targetId}`
+        `Calling user and target user do not match! Calling user: ${ctx.state.user._id}, Target user: ${targetId}`
       )
 
       // If they don't match, then the calling user better be an admin.
       if (ctx.state.user.type !== 'admin') {
         ctx.throw(401, 'not admin')
       } else {
-        wlogger.verbose(`It's ok. The user is an admin.`)
+        wlogger.verbose('It\'s ok. The user is an admin.')
       }
     }
 
     return next()
   } catch (err) {
     wlogger.error(
-      `Error in src/middleware/validators.js/ensureTargetUserOrAdmin()`
+      'Error in src/middleware/validators.js/ensureTargetUserOrAdmin()'
     )
+
     throw err
   }
 }

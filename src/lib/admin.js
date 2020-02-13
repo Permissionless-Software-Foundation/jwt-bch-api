@@ -10,8 +10,8 @@
 */
 
 'use strict'
-
-const rp = require('request-promise')
+const axios = require('axios').default
+const mongoose = require('mongoose')
 const User = require('../models/users')
 const jsonFiles = require('./utils/json-files')
 const config = require('../../config')
@@ -32,18 +32,15 @@ async function createSystemUser () {
 
     const options = {
       method: 'POST',
-      uri: `${LOCALHOST}/users`,
-      resolveWithFullResponse: true,
-      json: true,
-      body: {
+      url: `${LOCALHOST}/users`,
+      data: {
         user: {
           email: 'system@system.com',
-          password: context.password,
-          _id: '5e3314136772a049f40a45a0'
+          password: context.password
         }
       }
     }
-    let result = await rp(options)
+    const result = await axios(options)
 
     context.email = result.body.user.email
     context.id = result.body.user._id
@@ -69,7 +66,7 @@ async function createSystemUser () {
     return context
   } catch (err) {
     // Handle existing system user.
-    if (err.statusCode === 422) {
+    if (err.response.status === 422) {
       try {
         // Delete the existing user
         await deleteExistingSystemUser()
@@ -77,12 +74,16 @@ async function createSystemUser () {
         // Call this function again.
         return createSystemUser()
       } catch (err2) {
-        console.error(`Error in admin.js/createSystemUser() while trying generate new system user.`)
+        console.error(
+          'Error in admin.js/createSystemUser() while trying generate new system user.'
+        )
         // process.end(1)
         throw err2
       }
     } else {
-      console.log('Error in admin.js/createSystemUser: ' + JSON.stringify(err, null, 2))
+      console.log(
+        'Error in admin.js/createSystemUser: ' + JSON.stringify(err, null, 2)
+      )
       // process.end(1)
       throw err
     }
@@ -91,27 +92,17 @@ async function createSystemUser () {
 
 async function deleteExistingSystemUser () {
   try {
-    let result = await loginAdmin()
+    mongoose.Promise = global.Promise
+    mongoose.set('useCreateIndex', true) // Stop deprecation warning.
 
-    const token = result.body.token
-    const id = result.body.user._id.toString()
+    await mongoose.connect(config.database, {
+      useNewUrlParser: true,
+      useUnifiedTopology: true
+    })
 
-    // Delete the user.
-    const options = {
-      method: 'DELETE',
-      uri: `${LOCALHOST}/users/${id}`,
-      resolveWithFullResponse: true,
-      json: true,
-      headers: {
-        Authorization: `Bearer ${token}`
-      }
-    }
-    result = await rp(options)
-    // console.log(`result2: ${JSON.stringify(result, null, 2)}`)
-
-    return result.body.success
+    await User.deleteOne({ email: 'system@system.com' })
   } catch (err) {
-    console.log(`Error in admin.js/deleteExistingSystemUser()`)
+    console.log('Error in admin.js/deleteExistingSystemUser()')
     throw err
   }
 }
@@ -126,22 +117,20 @@ async function loginAdmin () {
     // console.log(`existingUser: ${JSON.stringify(existingUser, null, 2)}`)
 
     // Log in as the user.
-    let options = {
+    const options = {
       method: 'POST',
-      uri: `${LOCALHOST}/auth`,
-      resolveWithFullResponse: true,
-      json: true,
-      body: {
+      url: `${LOCALHOST}/auth`,
+      data: {
         email: 'system@system.com',
         password: existingUser.password
       }
     }
-    let result = await rp(options)
+    const result = await axios(options)
     // console.log(`result1: ${JSON.stringify(result, null, 2)}`)
 
     return result
   } catch (err) {
-    console.error(`Error in admin.js/loginAdmin().`)
+    console.error('Error in admin.js/loginAdmin().')
 
     // console.error(`existingUser: ${JSON.stringify(existingUser, null, 2)}`)
 
@@ -151,7 +140,8 @@ async function loginAdmin () {
 
 function _randomString (length) {
   var text = ''
-  var possible = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789'
+  var possible =
+    'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789'
   for (var i = 0; i < length; i++) {
     text += possible.charAt(Math.floor(Math.random() * possible.length))
   }

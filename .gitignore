@@ -4,7 +4,8 @@
 
 ### Node ###
 # Logs
-logs
+#logs
+logs/*.json
 *.log
 npm-debug.log*
 
@@ -64,3 +65,5 @@ system-user-*.json
 
 # Specific to jwt-bch-api
 wallet.json
+
+!README.md

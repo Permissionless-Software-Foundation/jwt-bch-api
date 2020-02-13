@@ -1,14 +1,18 @@
 const mongoose = require('mongoose')
-const rp = require('request-promise')
 const config = require('../config')
+const axios = require('axios').default
 
 const LOCALHOST = `http://localhost:${config.port}`
 
 // Remove all collections from the DB.
 async function cleanDb () {
   for (const collection in mongoose.connection.collections) {
-    if (mongoose.connection.collections.hasOwnProperty(collection)) {
-      await mongoose.connection.collections[collection].deleteMany()
+    const collections = mongoose.connection.collections
+    if (collections.collection) {
+      // const thisCollection = mongoose.connection.collections[collection]
+      // console.log(`thisCollection: ${JSON.stringify(thisCollection, null, 2)}`)
+
+      await collection.deleteMany()
     }
   }
 }
@@ -22,10 +26,8 @@ async function createUser (userObj) {
   try {
     const options = {
       method: 'POST',
-      uri: `${LOCALHOST}/users`,
-      resolveWithFullResponse: true,
-      json: true,
-      body: {
+      url: `${LOCALHOST}/users`,
+      data: {
         user: {
           email: userObj.email,
           password: userObj.password
@@ -33,11 +35,11 @@ async function createUser (userObj) {
       }
     }
 
-    let result = await rp(options)
+    const result = await axios(options)
 
     const retObj = {
-      user: result.body.user,
-      token: result.body.token
+      user: result.data.user,
+      token: result.data.token
     }
 
     return retObj
@@ -53,18 +55,16 @@ async function loginTestUser () {
   try {
     const options = {
       method: 'POST',
-      uri: `${LOCALHOST}/auth`,
-      resolveWithFullResponse: true,
-      json: true,
-      body: {
+      url: `${LOCALHOST}/auth`,
+      data: {
         email: 'test@test.com',
         password: 'pass'
       }
     }
 
-    let result = await rp(options)
+    const result = await axios(options)
 
-    // console.log(`result: ${JSON.stringify(result, null, 2)}`)
+    // console.log(`result: ${JSON.stringify(result.data, null, 2)}`)
 
     const retObj = {
       token: result.body.token,
@@ -94,23 +94,21 @@ async function loginAdminUser () {
 
     const options = {
       method: 'POST',
-      uri: `${LOCALHOST}/auth`,
-      resolveWithFullResponse: true,
-      json: true,
-      body: {
+      url: `${LOCALHOST}/auth`,
+      data: {
         email: adminUserData.email,
         password: adminUserData.password
       }
     }
 
-    let result = await rp(options)
+    const result = await axios(options)
 
-    // console.log(`result: ${JSON.stringify(result, null, 2)}`)
+    // console.log(`result: ${JSON.stringify(result.data, null, 2)}`)
 
     const retObj = {
-      token: result.body.token,
-      user: result.body.user.username,
-      id: result.body.user._id.toString()
+      token: result.data.token,
+      user: result.data.user.username,
+      id: result.data.user._id.toString()
     }
 
     return retObj
@@ -146,19 +144,17 @@ async function updateUser (userObj) {
 
     const options = {
       method: 'PUT',
-      uri: `${LOCALHOST}/users/${userObj.id}`,
-      resolveWithFullResponse: true,
-      json: true,
+      url: `${LOCALHOST}/users/${userObj.id}`,
       headers: {
         Accept: 'application/json',
         Authorization: `Bearer ${userObj.token}`
       },
-      body: {
+      data: {
         user: userObj
       }
     }
 
-    await rp(options)
+    await axios.request(options)
 
     return true
   } catch (err) {

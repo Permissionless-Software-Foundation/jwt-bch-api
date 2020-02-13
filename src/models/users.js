@@ -11,6 +11,7 @@ const User = new mongoose.Schema({
   name: { type: String },
   username: { type: String },
   password: { type: String, required: true },
+
   apiToken: { type: String },
   apiLevel: { type: Number, default: 0 }, // Access level. 0 = public access.
   rateLimit: { type: Number, default: 10 }, // Requests per minute
@@ -18,6 +19,7 @@ const User = new mongoose.Schema({
   hdIndex: { type: Number }, // Index in the hd wallet associated with this user.
   satBal: { type: Number, default: 0 }, // balance of BCH in satoshis
   credit: { type: Number, default: 0 }, // account credit in USD.
+
   email: {
     type: String,
     required: true,
@@ -61,7 +63,7 @@ User.pre('save', function preSave (next) {
       })
       .catch(err => next(err))
   } catch (err) {
-    wlogger.error(`Error in models/users.js/pre-save()`)
+    wlogger.error('Error in models/users.js/pre-save()')
     throw err
   }
 })
@@ -80,7 +82,7 @@ User.methods.validatePassword = function validatePassword (password) {
       })
     })
   } catch (err) {
-    wlogger.error(`Error in models/users.js/validatePassword()`)
+    wlogger.error('Error in models/users.js/validatePassword()')
     throw err
   }
 }
@@ -110,7 +112,7 @@ User.methods.generateToken = function generateToken () {
     // console.log(`generated token: ${token}`)
     return token
   } catch (err) {
-    wlogger.error(`Error in models/user.js/generateToken()`)
+    wlogger.error('Error in models/user.js/generateToken()')
     throw err
   }
 }
