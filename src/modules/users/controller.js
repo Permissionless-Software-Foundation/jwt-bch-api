@@ -1,11 +1,11 @@
-// const User = require('../../models/users')
+const User = require('../../models/users')
 // const util = require('../../lib/utils/json-files')
-
+//
 // const wlogger = require('../../lib/wlogger')
-
+//
 // const GetAddress = require('slp-cli-wallet/src/commands/get-address')
 // const getAddress = new GetAddress()
-
+//
 // const walletFilename = `${__dirname}/../../../config/wallet.json`
 // const validator = require('koa-validate').Validator
 
@@ -13,7 +13,7 @@ let _this
 class UserController {
   constructor () {
     _this = this
-    // this.User = User
+    this.User = User
   }
 
   /**
@@ -59,11 +59,7 @@ class UserController {
     const user = new _this.User(ctx.request.body.user)
 
     try {
-      /*
-       * ERROR HANDLERS
-       *
-       */
-      // Required property
+      // Input validation.
       if (!user.email || typeof user.email !== 'string') {
         throw new Error("Property 'email' must be a string!")
       }

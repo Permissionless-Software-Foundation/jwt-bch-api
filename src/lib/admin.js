@@ -40,11 +40,12 @@ async function createSystemUser () {
         }
       }
     }
-    const result = await axios(options)
+    const result = await axios.request(options)
+    // console.log(`result.data: ${JSON.stringify(result.data, null, 2)}`)
 
-    context.email = result.body.user.email
-    context.id = result.body.user._id
-    context.token = result.body.token
+    context.email = result.data.user.email
+    context.id = result.data.user._id
+    context.token = result.data.token
 
     // Get the mongoDB entry
     const user = await User.findById(context.id)
@@ -65,6 +66,7 @@ async function createSystemUser () {
 
     return context
   } catch (err) {
+    console.log(`err: `, err)
     // Handle existing system user.
     if (err.response.status === 422) {
       try {

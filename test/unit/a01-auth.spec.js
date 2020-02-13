@@ -47,19 +47,13 @@ describe('Auth', () => {
         )
         assert(false, 'Unexpected result')
       } catch (err) {
-        if (err.response.status === 422) {
-          assert(err.response.status === 422, 'Error code 422 expected.')
-        } else if (err.response.status === 401) {
+        if (err.response.status === 401) {
           assert(err.response.status === 401, 'Error code 401 expected.')
-        } else {
-          console.error('Error: ', err)
-          console.log('Error stringified: ' + JSON.stringify(err, null, 2))
-          throw err
         }
       }
     })
 
-    it('should throw 422 if email is wrong format', async () => {
+    it('should throw 401 if email is wrong format', async () => {
       try {
         const options = {
           method: 'post',
@@ -69,47 +63,13 @@ describe('Auth', () => {
             password: 'wrongpassword'
           }
         }
+        await axios.request(options)
 
-        await axios(options)
         assert(false, 'Unexpected result')
       } catch (err) {
-        if (err.response.status === 422) {
-          assert(err.response.status === 422, 'Error code 422 expected.')
-        } else if (err.response.status === 401) {
-          assert(err.response.status === 401, 'Error code 401 expected.')
-        } else {
-          console.error('Error: ', err)
-          console.log('Error stringified: ' + JSON.stringify(err, null, 2))
-          throw err
-        }
-      }
-    })
+        // console.log('err: ', err)
 
-    it('should throw 422 if email is wrong format', async () => {
-      try {
-        const options = {
-          method: 'POST',
-          uri: `${LOCALHOST}/auth`,
-          resolveWithFullResponse: true,
-          json: true,
-          body: {
-            email: 'wrongEmail',
-            password: 'wrongpassword'
-          }
-        }
-
-        await rp(options)
-        assert(false, 'Unexpected result')
-      } catch (err) {
-        if (err.statusCode === 422) {
-          assert(err.statusCode === 422, 'Error code 422 expected.')
-        } else if (err.statusCode === 401) {
-          assert(err.statusCode === 401, 'Error code 401 expected.')
-        } else {
-          console.error('Error: ', err)
-          console.log('Error stringified: ' + JSON.stringify(err, null, 2))
-          throw err
-        }
+        assert(err.response.status === 401, 'Error code 401 expected.')
       }
     })
 
@@ -136,10 +96,7 @@ describe('Auth', () => {
           'Password expected to be omited'
         )
       } catch (err) {
-        console.log(
-          'Error authenticating test user: ' + JSON.stringify(err, null, 2)
-        )
-        throw err
+        console.log('Error authenticating test user: ', err)
       }
     })
   })
