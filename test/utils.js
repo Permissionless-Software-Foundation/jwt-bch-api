@@ -67,14 +67,14 @@ async function loginTestUser () {
     // console.log(`result: ${JSON.stringify(result.data, null, 2)}`)
 
     const retObj = {
-      token: result.body.token,
-      user: result.body.user.username,
-      id: result.body.user._id.toString(),
-      apiToken: result.body.user.apiToken,
-      bchAddr: result.body.user.bchAddr,
-      credit: result.body.user.credit,
-      satBal: result.body.user.satBal,
-      email: result.body.user.email
+      token: result.data.token,
+      user: result.data.user.username,
+      id: result.data.user._id.toString(),
+      apiToken: result.data.user.apiToken,
+      bchAddr: result.data.user.bchAddr,
+      credit: result.data.user.credit,
+      satBal: result.data.user.satBal,
+      email: result.data.user.email
     }
 
     return retObj

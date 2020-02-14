@@ -18,8 +18,8 @@ module.exports.routes = [
     handlers: [validator.ensureUser, apiTokenController.newToken]
   },
   {
-    method: 'GET',
-    route: '/isvalid/:jwt',
+    method: 'POST',
+    route: '/isvalid',
     handlers: [apiTokenController.isValid]
   },
   {

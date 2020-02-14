@@ -40,7 +40,6 @@ class ApiTokenController {
    */
   //
   // Given a user GUID, return the BCH payment address for that user.
-
   async getBchAddr (ctx, next) {
     try {
       // Get user data
@@ -59,7 +58,7 @@ class ApiTokenController {
         ctx.throw(404)
       }
 
-      wlogger.error(`Error in apitoken/controller.js/getBchAddr()`, err)
+      wlogger.error('Error in apitoken/controller.js/getBchAddr()', err)
       ctx.throw(500)
     }
 
@@ -135,7 +134,7 @@ class ApiTokenController {
     } catch (err) {
       if (err.status) ctx.throw(err.status, err.message)
 
-      wlogger.error(`Error in apitoken/controller.js/newToken()`, err)
+      wlogger.error('Error in apitoken/controller.js/newToken()', err)
       ctx.throw(500)
     }
 
@@ -170,13 +169,13 @@ class ApiTokenController {
 
       return refund
     } catch (err) {
-      console.error(`Error in apiToken controller.js/_calculateRefund()`)
+      console.error('Error in apiToken controller.js/_calculateRefund()')
       throw err
     }
   }
 
   /**
-   * @api {get} /isvalid/:jwt Check if JWT is valid
+   * @api {post} /isvalid Check if JWT is valid
    * @apiPermission public
    * @apiName isValid
    * @apiGroup API Token
@@ -188,14 +187,16 @@ class ApiTokenController {
   // Expects an API JWT token as input and returns true or false if it's valid.
   async isValid (ctx, next) {
     // false by default.
-    let outObj = {
+    const outObj = {
       isValid: false,
       apiLevel: 0
     }
 
     try {
-      const token = ctx.params.jwt
+      const token = ctx.request.body.token
       // console.log(`token: ${token}`)
+
+      if (!token) throw new Error('Token could not be found in POST body.')
 
       const jwtOptions = {
         algorithms: ['ES256']
@@ -229,7 +230,7 @@ class ApiTokenController {
       outObj.isValid = true
       outObj.apiLevel = user.apiLevel
 
-      console.log(
+      wlogger.debug(
         `valid: true, apiLevel: ${outObj.apiLevel}, JWT: ${token.slice(
           -6
         )}, user: ${user.username}`
@@ -237,7 +238,7 @@ class ApiTokenController {
 
       ctx.body = outObj
     } catch (err) {
-      console.error(`Error in apitoken/isValid(). Returning false.`)
+      wlogger.debug('Error in apitoken/isValid(). Returning false.')
       // If any error is thrown, return false, indicating the JWT token is invalid.
       ctx.body = outObj
     }
@@ -308,7 +309,7 @@ class ApiTokenController {
       // Return the updated credit.
       ctx.body = user.credit
     } catch (err) {
-      if (err.messsage && err.message.indexOf(`No utxos found`) > -1) {
+      if (err.messsage && err.message.indexOf('No utxos found') > -1) {
         ctx.throw(
           409,
           'UTXO not found. Try again in a minute or send additional BCH.'
@@ -319,7 +320,7 @@ class ApiTokenController {
         ctx.throw(404)
       }
 
-      wlogger.error(`Error in apitoken/controller.js/updateCredit()`, err)
+      wlogger.error('Error in apitoken/controller.js/updateCredit()', err)
       ctx.throw(500, 'Wait a couple minutes before trying again.')
     }
 
@@ -362,7 +363,7 @@ class ApiTokenController {
           apiToken: false
         }
 
-      // Normal path
+        // Normal path
       } else {
         ctx.body = {
           apiToken: user.apiToken
@@ -371,7 +372,7 @@ class ApiTokenController {
     } catch (err) {
       if (err.status) ctx.throw(err.status, err.message)
 
-      wlogger.error(`Error in apitoken/controller.js/getExistingToken()`, err)
+      wlogger.error('Error in apitoken/controller.js/getExistingToken()', err)
       ctx.throw(500)
     }
 
