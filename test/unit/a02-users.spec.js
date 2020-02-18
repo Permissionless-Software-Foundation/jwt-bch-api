@@ -56,9 +56,7 @@ describe('Users', () => {
         )
         assert(false, 'Unexpected result')
       } catch (err) {
-        if (err.response.status === 422) {
-          assert(err.response.status === 422, 'Error code 422 expected.')
-        }
+        assert(err.response.status === 422, 'Error code 422 expected.')
       }
     })
 
@@ -73,7 +71,7 @@ describe('Users', () => {
             }
           }
         }
-        await axios.request(options)
+        await axios(options)
 
         assert(false, 'Unexpected result')
       } catch (err) {
@@ -83,7 +81,7 @@ describe('Users', () => {
       }
     })
 
-    it('should reject signup if email property provided is wrong format', async () => {
+    it('should reject signup if email property provided in wrong format', async () => {
       try {
         const options = {
           method: 'POST',
@@ -95,7 +93,7 @@ describe('Users', () => {
             }
           }
         }
-        await axios.request(options)
+        await axios(options)
 
         assert(false, 'Unexpected result')
       } catch (err) {
@@ -118,8 +116,7 @@ describe('Users', () => {
             }
           }
         }
-
-        await axios.request(options)
+        await axios(options)
 
         assert(false, 'Unexpected result')
       } catch (err) {
@@ -168,6 +165,20 @@ describe('Users', () => {
       assert.property(result.data.user, 'bchAddr')
       assert.property(result.data.user, 'hdIndex')
 
+      context.user = result.data.user
+      context.token = result.data.token
+
+      assert(result.status === 200, 'Status Code 200 expected.')
+      assert(
+        result.data.user.email === 'test3@test.com',
+        'Email of test expected'
+      )
+      assert(
+        result.data.user.password === undefined,
+        'Password expected to be omited'
+      )
+      assert.property(result.data, 'token', 'Token property exists.')
+
       assert.equal(result.data.user.type, 'user')
     })
   })
@@ -182,12 +193,10 @@ describe('Users', () => {
             Accept: 'application/json'
           }
         }
-
         await axios(options)
 
         assert.equal(true, false, 'Unexpected behavior')
       } catch (err) {
-        // console.log(`err: `, err)
         assert.equal(err.response.status, 401)
       }
     })
@@ -202,8 +211,8 @@ describe('Users', () => {
             Authorization: '1'
           }
         }
-
         await axios(options)
+
         assert.equal(true, false, 'Unexpected behavior')
       } catch (err) {
         assert.equal(err.response.status, 401)
@@ -221,8 +230,8 @@ describe('Users', () => {
             Authorization: `Unknown ${token}`
           }
         }
-
         await axios(options)
+
         assert.equal(true, false, 'Unexpected behavior')
       } catch (err) {
         assert.equal(err.response.status, 401)
@@ -239,8 +248,8 @@ describe('Users', () => {
             Authorization: 'Bearer 1'
           }
         }
-
         await axios(options)
+
         assert.equal(true, false, 'Unexpected behavior')
       } catch (err) {
         assert.equal(err.response.status, 401)
@@ -277,8 +286,8 @@ describe('Users', () => {
           Authorization: `Bearer ${context.adminJWT}`
         }
       }
-
       const result = await axios(options)
+
       const users = result.data.users
       // console.log(`users: ${util.inspect(users)}`)
 
@@ -300,7 +309,7 @@ describe('Users', () => {
             Authorization: 'Bearer 1'
           }
         }
-        await axios.request(options)
+        await axios(options)
 
         assert.equal(true, false, 'Unexpected behavior')
       } catch (err) {
@@ -328,8 +337,9 @@ describe('Users', () => {
       }
     })
 
-    it('should fetch user if admin', async () => {
-      const _id = context.id2
+    it('should fetch own user', async () => {
+      const _id = context.user._id
+      const token = context.token
 
       const options = {
         method: 'GET',
@@ -339,8 +349,8 @@ describe('Users', () => {
           Authorization: `Bearer ${context.adminJWT}`
         }
       }
-
       const result = await axios(options)
+
       const user = result.data.user
       // console.log(`user: ${util.inspect(user)}`)
 
@@ -349,6 +359,7 @@ describe('Users', () => {
       assert.property(user, 'email')
 
       assert.equal(user._id, _id)
+
       assert.notProperty(
         user,
         'password',
@@ -367,7 +378,7 @@ describe('Users', () => {
             Authorization: 'Bearer 1'
           }
         }
-        await axios.request(options)
+        await axios(options)
 
         assert.equal(true, false, 'Unexpected behavior')
       } catch (err) {
@@ -388,7 +399,7 @@ describe('Users', () => {
             Authorization: `Bearer ${token}`
           }
         }
-        await axios.request(options)
+        await axios(options)
 
         assert.equal(true, false, 'Unexpected behavior')
       } catch (err) {
@@ -396,15 +407,16 @@ describe('Users', () => {
       }
     })
 
-    it('should update own user with minimum inputs', async () => {
-      const _id = context.id2
+    it('should update user with minimum inputs', async () => {
+      const _id = context.user._id
+      const token = context.token
 
       const options = {
         method: 'PUT',
         url: `${LOCALHOST}/users/${_id}`,
         headers: {
           Accept: 'application/json',
-          Authorization: `Bearer ${context.token2}`
+          Authorization: `Bearer ${token}`
         },
         data: {
           user: { email: 'testToUpdate@test.com' }
@@ -415,14 +427,58 @@ describe('Users', () => {
       const user = result.data.user
       // console.log(`user: ${util.inspect(user)}`)
 
-      assert.hasAnyKeys(user, ['type', '_id', 'email'])
+      assert.property(user, 'type')
+      assert.property(user, 'email')
+
+      assert.property(user, '_id')
       assert.equal(user._id, _id)
+
       assert.notProperty(
         user,
         'password',
         'Password property should not be returned'
       )
       assert.equal(user.email, 'testToUpdate@test.com')
+    })
+
+    it('should update user with all inputs', async () => {
+      const _id = context.user._id
+      const token = context.token
+
+      const options = {
+        method: 'PUT',
+        url: `${LOCALHOST}/users/${_id}`,
+        headers: {
+          Accept: 'application/json',
+          Authorization: `Bearer ${token}`
+        },
+        data: {
+          user: {
+            email: 'testToUpdate@test.com',
+            name: 'my name',
+            username: 'myUsername'
+          }
+        }
+      }
+      const result = await axios(options)
+
+      const user = result.data.user
+      // console.log(`user: ${util.inspect(user)}`)
+
+      assert.property(user, 'type')
+      assert.property(user, 'email')
+      assert.property(user, 'name')
+
+      assert.property(user, '_id')
+      assert.equal(user._id, _id)
+      assert.notProperty(
+        user,
+        'password',
+        'Password property should not be returned'
+      )
+      assert.equal(user.name, 'my name')
+      assert.equal(user.email, 'testToUpdate@test.com')
+      assert.equal(user.username, 'myUsername')
     })
 
     it('should not be able to update user type', async () => {
@@ -440,19 +496,18 @@ describe('Users', () => {
             }
           }
         }
-
         const result = await axios(options)
 
-        // console.log(`Users: ${JSON.stringify(result.data, null, 2)}`)
+        console.log(`Users: ${JSON.stringify(result.data, null, 2)}`)
 
-        assert(result.status === 200, 'Status Code 200 expected.')
-        assert(result.data.user.type === 'user', 'Type should be unchanged.')
+        // assert(result.status === 200, 'Status Code 200 expected.')
+        // assert(result.data.user.type === 'user', 'Type should be unchanged.')
         assert.equal(true, false, 'Unexpected behavior')
       } catch (err) {
         assert.equal(err.response.status, 422)
         assert.include(
           err.response.data,
-          "Property 'type' just can change for Admin user"
+          "Property 'type' can only be changed by Admin user"
         )
       }
     })
@@ -471,10 +526,10 @@ describe('Users', () => {
             }
           }
         }
-
         const result = await axios(options)
 
-        console.log(`result stringified: ${JSON.stringify(result, null, 2)}`)
+        console.log(`result: ${JSON.stringify(result.data, null, 2)}`)
+
         assert(false, 'Unexpected result')
       } catch (err) {
         assert.equal(err.response.status, 401)
@@ -496,7 +551,6 @@ describe('Users', () => {
           }
         }
       }
-
       const result = await axios(options)
       // console.log(`result stringified: ${JSON.stringify(result, null, 2)}`)
 
@@ -506,10 +560,8 @@ describe('Users', () => {
 
     it('should not be able to update if name property is wrong', async () => {
       try {
-        const {
-          user: { _id },
-          token
-        } = context
+        const _id = context.user._id
+        const token = context.token
 
         const options = {
           method: 'PUT',
@@ -525,9 +577,7 @@ describe('Users', () => {
             }
           }
         }
-
-        await axios.request(options)
-        // const result = await axios(options)
+        await axios(options)
 
         assert.equal(true, false, 'unexpected result')
       } catch (error) {
@@ -536,13 +586,11 @@ describe('Users', () => {
       }
     })
 
-    it('should not be able to update if email property provided is wrong format', async () => {
-      const {
-        user: { _id },
-        token
-      } = context
-
+    it('should not be able to update if email is wrong format', async () => {
       try {
+        const _id = context.user._id
+        const token = context.token
+
         const options = {
           method: 'PUT',
           url: `${LOCALHOST}/users/${_id}`,
@@ -556,7 +604,7 @@ describe('Users', () => {
             }
           }
         }
-        await axios.request(options)
+        await axios(options)
 
         assert.equal(true, false, 'unexpected result')
       } catch (err) {
@@ -578,7 +626,7 @@ describe('Users', () => {
             Authorization: 'Bearer 1'
           }
         }
-        await axios.request(options)
+        await axios(options)
 
         assert.equal(true, false, 'Unexpected behavior')
       } catch (err) {
@@ -586,7 +634,7 @@ describe('Users', () => {
       }
     })
 
-    it('should throw 401 if deleting other user', async () => {
+    it('should throw 401 if deleting invalid user', async () => {
       const { token } = context
 
       try {
@@ -598,7 +646,7 @@ describe('Users', () => {
             Authorization: `Bearer ${token}`
           }
         }
-        await axios.request(options)
+        await axios(options)
 
         assert.equal(true, false, 'Unexpected behavior')
       } catch (err) {
@@ -615,12 +663,8 @@ describe('Users', () => {
             Authorization: `Bearer ${context.token}`
           }
         }
+        await axios(options)
 
-        const result = await axios(options)
-
-        console.log(
-          `result stringified: ${JSON.stringify(result.data, null, 2)}`
-        )
         assert(false, 'Unexpected result')
       } catch (err) {
         assert.equal(err.response.status, 401)
@@ -628,10 +672,8 @@ describe('Users', () => {
     })
 
     it('should delete own user', async () => {
-      const {
-        user: { _id },
-        token
-      } = context
+      const _id = context.user._id
+      const token = context.token
 
       const options = {
         method: 'DELETE',
@@ -641,7 +683,6 @@ describe('Users', () => {
           Authorization: `Bearer ${token}`
         }
       }
-
       const result = await axios(options)
       // console.log(`result: ${util.inspect(result.data.success)}`)
 
@@ -660,7 +701,6 @@ describe('Users', () => {
           Authorization: `Bearer ${adminJWT}`
         }
       }
-
       const result = await axios(options)
       // console.log(`result: ${util.inspect(result.data)}`)
 

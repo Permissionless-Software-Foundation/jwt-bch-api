@@ -102,7 +102,7 @@ class UserController {
         token
       }
     } catch (err) {
-      wlogger.debug(`createUser() returning error: `, err.message)
+      wlogger.debug('createUser() returning error: ', err.message)
       ctx.throw(422, err.message)
     }
   }
@@ -172,7 +172,6 @@ class UserController {
    *
    * @apiUse TokenError
    */
-
   async getUser (ctx, next) {
     try {
       const user = await _this.User.findById(ctx.params.id, '-password')
@@ -277,7 +276,7 @@ class UserController {
 
         // Unless the calling user is an admin, they can not change the user type.
         if (userType !== 'admin') {
-          throw new Error("Property 'type' just can change for Admin user")
+          throw new Error("Property 'type' can only be changed by Admin user")
         }
       }
 

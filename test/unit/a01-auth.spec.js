@@ -47,9 +47,7 @@ describe('Auth', () => {
         )
         assert(false, 'Unexpected result')
       } catch (err) {
-        if (err.response.status === 401) {
-          assert(err.response.status === 401, 'Error code 401 expected.')
-        }
+        assert(err.response.status === 401, 'Error code 401 expected.')
       }
     })
 
@@ -67,8 +65,6 @@ describe('Auth', () => {
 
         assert(false, 'Unexpected result')
       } catch (err) {
-        // console.log('err: ', err)
-
         assert(err.response.status === 401, 'Error code 401 expected.')
       }
     })
