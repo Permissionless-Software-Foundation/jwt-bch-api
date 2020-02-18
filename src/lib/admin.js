@@ -66,7 +66,7 @@ async function createSystemUser () {
 
     return context
   } catch (err) {
-    console.log(`err: `, err)
+    // console.log(`err: `, err)
     // Handle existing system user.
     if (err.response.status === 422) {
       try {
