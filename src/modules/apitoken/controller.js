@@ -80,14 +80,23 @@ class ApiTokenController {
    */
   // Request a new API JWT token.
   async newToken (ctx, next) {
+    // Assumed values:
+    // 0 = anonymous
+    // 10 = free tier
+    // 20 = full node ($10)
+    // 30 = indexer ($20)
+    // 40 = SLP ($30)
     try {
       // console.log(`ctx.request.body: ${JSON.stringify(ctx.request.body, null, 2)}`)
-      const newApiLevel = ctx.request.body.apiLevel
+      let newApiLevel = ctx.request.body.apiLevel
 
       // Throw error if apiLevel is not included.
       if ((newApiLevel !== 0 && !newApiLevel) || isNaN(newApiLevel)) {
         ctx.throw(422, 'apiLevel must be an integer number')
       }
+
+      // Force newApiLevel to be an integer.
+      newApiLevel = Math.round(newApiLevel)
 
       // Get user data
       const user = ctx.state.user
@@ -96,7 +105,7 @@ class ApiTokenController {
 
       // If the user already has a JWT token, calculate a refund for the time
       // they've paid for.
-      if (user.apiToken) {
+      if (user.apiLevel > 10) {
         const refund = _this._calculateRefund(user)
 
         // console.log(`refund: ${refund}`)
@@ -105,7 +114,7 @@ class ApiTokenController {
       }
 
       // Check against balance.
-      if (user.credit < newApiLevel) ctx.throw(402, 'Not enough credit')
+      if (user.credit < newApiLevel - 10) ctx.throw(402, 'Not enough credit')
 
       // Generate new JWT token.
       const token = apiTokenLib.generateToken(user)
@@ -114,13 +123,17 @@ class ApiTokenController {
       user.apiToken = token
 
       // Deduct credit
-      user.credit = user.credit - newApiLevel
+      if (newApiLevel > 10) {
+        user.credit = user.credit - newApiLevel + 10
+        // console.log(`user.credit: ${user.credit}`)
+      }
 
       // Set the new API level
       user.apiLevel = newApiLevel
 
       // Update the user data in the DB.
       try {
+        // console.log(`new user data: ${JSON.stringify(user, null, 2)}`)
         await user.save()
       } catch (err) {
         ctx.throw(422, err.message)
@@ -161,7 +174,7 @@ class ApiTokenController {
       diff = diff / (1000 * 60 * 60 * 24) // Convert to days.
       // console.log(`Time left: ${diff} days`)
 
-      let refund = (diff / 30) * oldApiLevel
+      let refund = (diff / 30) * (oldApiLevel - 10)
 
       if (refund < 0) refund = 0
 
@@ -355,7 +368,7 @@ class ApiTokenController {
     try {
       // Get user data
       const user = ctx.state.user
-      console.log(`user: ${JSON.stringify(user, null, 2)}`)
+      // console.log(`user: ${JSON.stringify(user, null, 2)}`)
 
       // If user has not yet generated an API token.
       if (!user.apiToken) {
