@@ -89,6 +89,7 @@ class ApiTokenController {
     try {
       // console.log(`ctx.request.body: ${JSON.stringify(ctx.request.body, null, 2)}`)
       let newApiLevel = ctx.request.body.apiLevel
+      // console.log(`Requesting API level: ${newApiLevel}`)
 
       // Throw error if apiLevel is not included.
       if ((newApiLevel !== 0 && !newApiLevel) || isNaN(newApiLevel)) {
@@ -116,20 +117,21 @@ class ApiTokenController {
       // Check against balance.
       if (user.credit < newApiLevel - 10) ctx.throw(402, 'Not enough credit')
 
-      // Generate new JWT token.
-      const token = apiTokenLib.generateToken(user)
-
-      // Update the user model in the DB with the new token.
-      user.apiToken = token
-
-      // Deduct credit
+      // Deduct credit for the new token.
       if (newApiLevel > 10) {
         user.credit = user.credit - newApiLevel + 10
         // console.log(`user.credit: ${user.credit}`)
       }
 
       // Set the new API level
+      // Dev note: this must be done before generating a new token.
       user.apiLevel = newApiLevel
+
+      // Generate new JWT token.
+      const token = apiTokenLib.generateToken(user)
+
+      // Update the user model in the DB with the new token.
+      user.apiToken = token
 
       // Update the user data in the DB.
       try {

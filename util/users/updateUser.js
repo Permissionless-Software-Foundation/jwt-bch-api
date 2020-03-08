@@ -11,7 +11,7 @@ const config = require('../../config')
 
 const User = require('../../src/models/users')
 
-const USERID = `5dbb1c8da4e1441e5f933900`
+const USERID = `5e4ed49894d34a6c2c154173`
 
 async function updateUser () {
   try {
@@ -31,8 +31,8 @@ async function updateUser () {
     console.log(`Old user data: ${JSON.stringify(user, null, 2)}`)
 
     /* Edit these lines to manipulate the user model */
-    // user.credit = 100.0
-    // await user.save()
+    user.credit = 100.0
+    await user.save()
 
     console.log(`New user data: ${JSON.stringify(user, null, 2)}`)
 
