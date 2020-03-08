@@ -5,6 +5,9 @@ const config = require('../../config')
 const sinon = require('sinon')
 const axios = require('axios')
 
+const JwtUtils = require('../../src/lib/jwt')
+const jwtUtils = new JwtUtils()
+
 const util = require('util')
 util.inspect.defaultOptions = { depth: 1 }
 
@@ -324,6 +327,55 @@ describe('API Token', () => {
       // $90.
       assert.isBelow(newUserData.credit, 91)
       assert.isAbove(newUserData.credit, 89)
+    })
+
+    // This test case comes from a bug that was discovered. Newly issued JWT
+    // tokens were being generated with the old apiLevel, rather than the new
+    // apiLevel.
+    it('should reflect new API level in JWT token', async () => {
+      const token = context.testUser.token
+
+      // Update the credit level of the test user.
+      context.testUser.credit = 100.0
+      await testUtils.updateUser(context.testUser)
+
+      // Get a new $10 token.
+      let options = {
+        method: 'POST',
+        url: `${LOCALHOST}/apitoken/new`,
+        headers: {
+          Authorization: `Bearer ${token}`
+        },
+        data: {
+          apiLevel: 10
+        }
+      }
+      let result = await axios(options)
+
+      assert.isString(result.data.apiToken)
+      assert.equal(result.data.apiLevel, 10)
+
+      // Get a new $40 token.
+      options = {
+        method: 'POST',
+        url: `${LOCALHOST}/apitoken/new`,
+        headers: {
+          Authorization: `Bearer ${token}`
+        },
+        data: {
+          apiLevel: 40
+        }
+      }
+      result = await axios(options)
+
+      assert.isString(result.data.apiToken)
+      assert.equal(result.data.apiLevel, 40)
+
+      // Ensure the $40 JWT has the appropriate API level.
+      const jwtData = jwtUtils.decodeToken(result.data.apiToken)
+      // console.log(`jwtData: ${JSON.stringify(jwtData, null, 2)}`)
+
+      assert.equal(jwtData.apiLevel, 40)
     })
   })
 
