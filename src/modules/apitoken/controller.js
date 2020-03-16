@@ -6,6 +6,9 @@ const jwt = require('jsonwebtoken')
 const KeyEncoder = require('key-encoder').default
 const keyEncoder = new KeyEncoder('secp256k1')
 
+const JwtLib = require('../../lib/jwt')
+const jwtLib = new JwtLib()
+
 const wlogger = require('../../lib/wlogger')
 
 // Business logic library for dealing with BCH.
@@ -23,6 +26,7 @@ class ApiTokenController {
   constructor () {
     this.bchjs = bchjs
     this.bch = bch
+    this.jwtLib = jwtLib
 
     _this = this
   }
@@ -129,9 +133,13 @@ class ApiTokenController {
 
       // Generate new JWT token.
       const token = apiTokenLib.generateToken(user)
+      // console.log(`token: ${token}`)
+
+      const tokenExp = jwtLib.getExpiration(token)
 
       // Update the user model in the DB with the new token.
       user.apiToken = token
+      user.apiTokenExp = tokenExp
 
       // Update the user data in the DB.
       try {

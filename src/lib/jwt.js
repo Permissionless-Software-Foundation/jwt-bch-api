@@ -47,6 +47,23 @@ class JwtUtils {
       throw err
     }
   }
+
+  // Returns an ISO string of the expiration date of the JWT token.
+  getExpiration (token) {
+    try {
+      const tokenData = _this.decodeToken(token)
+
+      let exp = tokenData.exp * 1000
+      exp = new Date(exp)
+      // console.log(`${exp.toISOString()}`)
+      exp = exp.toISOString()
+
+      return exp
+    } catch (err) {
+      console.error('Error in jwt.js/getExpiration')
+      throw err
+    }
+  }
 }
 
 module.exports = JwtUtils
