@@ -13,6 +13,7 @@ const User = new mongoose.Schema({
   password: { type: String, required: true },
 
   apiToken: { type: String },
+  apiTokenExp: { type: String },
   apiLevel: { type: Number, default: 0 }, // Access level. 0 = public access.
   rateLimit: { type: Number, default: 3 }, // Requests per minute
   bchAddr: { type: String, defaut: '' }, // BCH address.
