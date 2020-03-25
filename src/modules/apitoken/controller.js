@@ -152,6 +152,7 @@ class ApiTokenController {
       // Return the BCH address
       ctx.body = {
         apiToken: token,
+        apiTokenExp: tokenExp,
         apiLevel: newApiLevel
       }
     } catch (err) {
