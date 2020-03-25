@@ -3,8 +3,8 @@ const apiTokenLib = require('../../lib/api-token')
 const config = require('../../../config')
 const jwt = require('jsonwebtoken')
 
-const KeyEncoder = require('key-encoder').default
-const keyEncoder = new KeyEncoder('secp256k1')
+// const KeyEncoder = require('key-encoder').default
+// const keyEncoder = new KeyEncoder('secp256k1')
 
 const JwtLib = require('../../lib/jwt')
 const jwtLib = new JwtLib()
@@ -222,18 +222,18 @@ class ApiTokenController {
 
       if (!token) throw new Error('Token could not be found in POST body.')
 
-      const jwtOptions = {
-        algorithms: ['ES256']
-      }
+      // const jwtOptions = {
+      //   algorithms: ['ES256']
+      // }
 
-      const pemPublicKey = keyEncoder.encodePublic(
-        config.publicKey,
-        'raw',
-        'pem'
-      )
+      // const pemPublicKey = keyEncoder.encodePublic(
+      //   config.publicKey,
+      //   'raw',
+      //   'pem'
+      // )
 
       // Validate the JWT token.
-      const decoded = jwt.verify(token, pemPublicKey, jwtOptions)
+      const decoded = jwt.verify(token, config.token)
       // console.log(`decoded: ${JSON.stringify(decoded, null, 2)}`)
 
       // Get user data
