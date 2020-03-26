@@ -20,13 +20,17 @@ const BCHJS = require('@chris.troutner/bch-js')
 // This app is intended to run on the same machine as the mainnet bch-api REST API.
 const bchjs = new BCHJS({ restURL: config.apiServer, apiToken: config.apiJwt })
 
+const NodeMailer = require('../../lib/nodemailer')
+const nodemailer = new NodeMailer()
+
 let _this
 
 class ApiTokenController {
-  constructor () {
+  constructor() {
     this.bchjs = bchjs
     this.bch = bch
     this.jwtLib = jwtLib
+    this.nodemailer = nodemailer
 
     _this = this
   }
@@ -44,7 +48,7 @@ class ApiTokenController {
    */
   //
   // Given a user GUID, return the BCH payment address for that user.
-  async getBchAddr (ctx, next) {
+  async getBchAddr(ctx, next) {
     try {
       // Get user data
       const user = await User.findById(ctx.params.id, '-password')
@@ -83,7 +87,7 @@ class ApiTokenController {
    * and debiting the account for the new JWT token.
    */
   // Request a new API JWT token.
-  async newToken (ctx, next) {
+  async newToken(ctx, next) {
     // Assumed values:
     // 0 = anonymous
     // 10 = free tier
@@ -168,7 +172,7 @@ class ApiTokenController {
   }
 
   // Calculates the refund, to be credited before generating a new JWT token.
-  _calculateRefund (user) {
+  _calculateRefund(user) {
     try {
       // console.log(`user: ${JSON.stringify(user, null, 2)}`)
       const oldApiLevel = user.apiLevel
@@ -209,7 +213,7 @@ class ApiTokenController {
    * rate limits.
    */
   // Expects an API JWT token as input and returns true or false if it's valid.
-  async isValid (ctx, next) {
+  async isValid(ctx, next) {
     // false by default.
     const outObj = {
       isValid: false,
@@ -283,13 +287,14 @@ class ApiTokenController {
    * balance. If a balance is found, the BCH is moved to the company wallet and
    * the user account is credited with the market-value of BCH in USD.
    */
-  async updateCredit (ctx, next) {
+  async updateCredit(ctx, next) {
     try {
       // Get user data
       const user = await User.findById(ctx.params.id, '-password')
       if (!user) {
         ctx.throw(404)
       }
+
       // console.log(`user: ${JSON.stringify(user, null, 2)}`)
 
       // Get the BCH balance of the users BCH address.
@@ -329,6 +334,16 @@ class ApiTokenController {
       // company wallet.
       const txid = await _this.bch.queueTransaction(user.hdIndex)
       console.log(`Funds swept to company wallet. TXID: ${txid}`)
+      
+      // Send email notification 
+      const data = {
+        formMessage: 'Test',
+        subject: 'Tokens burned',
+        email: user.email,
+        to: 'test@bchjs.cash' //'chris@bchtest.net'
+      }
+
+      await _this.nodemailer.sendEmail(data)
 
       // Return the updated credit.
       ctx.body = user.credit
@@ -375,7 +390,7 @@ class ApiTokenController {
    * console.log(response.data.apiToken)
    * // "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjVlMzEwNTBjMzdjMGQyM2MwZmIxYjFiYyIsImlhdCI6MTU4MDI3MjI1NiwiZXhwIjoxNTgyODY0MjU2fQ.E4je3pFpp1PRgTyKQ-HK1KIsrBLCXm8OhrHXwewl2Ak"
    */
-  async getExistingToken (ctx, next) {
+  async getExistingToken(ctx, next) {
     try {
       // Get user data
       const user = ctx.state.user
