@@ -104,12 +104,6 @@ User.methods.generateToken = function generateToken () {
       rateLimit: user.rateLimit
     }
 
-    // const pemPrivateKey = keyEncoder.encodePrivate(
-    //   config.privateKey,
-    //   'raw',
-    //   'pem'
-    // )
-    // const token = jwt.sign(jwtPayload, pemPrivateKey, jwtOptions)
     const token = jwt.sign(jwtPayload, config.token, jwtOptions)
     // console.log(`config.token: ${config.token}`)
     // console.log(`generated token: ${token}`)
