@@ -93,9 +93,10 @@ User.methods.generateToken = function generateToken () {
     const user = this
 
     const jwtOptions = {
-      expiresIn: config.jwtExpiration,
-      algorithm: 'ES256'
+      expiresIn: config.jwtExpiration
+      // algorithm: 'ES256'
     }
+    // const token = jwt.sign({ id: user.id }, config.token)
 
     const jwtPayload = {
       id: user.id,
@@ -103,12 +104,7 @@ User.methods.generateToken = function generateToken () {
       rateLimit: user.rateLimit
     }
 
-    const pemPrivateKey = keyEncoder.encodePrivate(
-      config.privateKey,
-      'raw',
-      'pem'
-    )
-    const token = jwt.sign(jwtPayload, pemPrivateKey, jwtOptions)
+    const token = jwt.sign(jwtPayload, config.token, jwtOptions)
     // console.log(`config.token: ${config.token}`)
     // console.log(`generated token: ${token}`)
     return token

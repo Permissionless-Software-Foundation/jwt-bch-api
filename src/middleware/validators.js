@@ -4,12 +4,12 @@ const getToken = require('../lib/auth')
 const jwt = require('jsonwebtoken')
 const wlogger = require('../lib/wlogger')
 
-const KeyEncoder = require('key-encoder').default
-const keyEncoder = new KeyEncoder('secp256k1')
+// const KeyEncoder = require('key-encoder').default
+// const keyEncoder = new KeyEncoder('secp256k1')
 
-const jwtOptions = {
-  algorithms: ['ES256']
-}
+// const jwtOptions = {
+//   algorithms: ['ES256']
+// }
 
 async function ensureUser (ctx, next) {
   try {
@@ -27,12 +27,13 @@ async function ensureUser (ctx, next) {
       // console.log(`config: ${JSON.stringify(config, null, 2)}`)
       // decoded = jwt.verify(token, config.publicKey, jwtOptions)
 
-      const pemPublicKey = keyEncoder.encodePublic(
-        config.publicKey,
-        'raw',
-        'pem'
-      )
-      decoded = jwt.verify(token, pemPublicKey, jwtOptions)
+      // const pemPublicKey = keyEncoder.encodePublic(
+      //   config.publicKey,
+      //   'raw',
+      //   'pem'
+      // )
+      // decoded = jwt.verify(token, pemPublicKey, jwtOptions)
+      decoded = jwt.verify(token, config.token)
     } catch (err) {
       wlogger.debug(`Err: Token could not be decoded: ${err}`)
       ctx.throw(401)
@@ -67,12 +68,14 @@ async function ensureAdmin (ctx, next) {
     try {
       // console.log(`token: ${JSON.stringify(token, null, 2)}`)
       // console.log(`config: ${JSON.stringify(config, null, 2)}`)
-      const pemPublicKey = keyEncoder.encodePublic(
-        config.publicKey,
-        'raw',
-        'pem'
-      )
-      decoded = jwt.verify(token, pemPublicKey, jwtOptions)
+      // const pemPublicKey = keyEncoder.encodePublic(
+      //   config.publicKey,
+      //   'raw',
+      //   'pem'
+      // )
+      // decoded = jwt.verify(token, pemPublicKey, jwtOptions)
+
+      decoded = jwt.verify(token, config.token)
     } catch (err) {
       // console.log(`Err: Token could not be decoded: ${err}`)
       ctx.throw(401)
@@ -118,12 +121,14 @@ async function ensureTargetUserOrAdmin (ctx, next) {
     try {
       // console.log(`token: ${JSON.stringify(token, null, 2)}`)
       // console.log(`config: ${JSON.stringify(config, null, 2)}`)
-      const pemPublicKey = keyEncoder.encodePublic(
-        config.publicKey,
-        'raw',
-        'pem'
-      )
-      decoded = jwt.verify(token, pemPublicKey, jwtOptions)
+      // const pemPublicKey = keyEncoder.encodePublic(
+      //   config.publicKey,
+      //   'raw',
+      //   'pem'
+      // )
+      // decoded = jwt.verify(token, pemPublicKey, jwtOptions)
+
+      decoded = jwt.verify(token, config.token)
     } catch (err) {
       // console.log(`Err: Token could not be decoded: ${err}`)
       ctx.throw(401)
