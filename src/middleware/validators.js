@@ -4,8 +4,8 @@ const getToken = require('../lib/auth')
 const jwt = require('jsonwebtoken')
 const wlogger = require('../lib/wlogger')
 
-const KeyEncoder = require('key-encoder').default
-const keyEncoder = new KeyEncoder('secp256k1')
+// const KeyEncoder = require('key-encoder').default
+// const keyEncoder = new KeyEncoder('secp256k1')
 
 // const jwtOptions = {
 //   algorithms: ['ES256']

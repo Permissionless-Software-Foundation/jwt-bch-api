@@ -320,17 +320,15 @@ class ApiTokenController {
       // Execute some code here to sweep funds from the users address into the
       // company wallet.
       const txid = await _this.bch.queueTransaction(user.hdIndex)
-      console.log(`Funds swept to company wallet. TXID: ${txid}`)
 
-      // Send email notification
-      const data = {
-        formMessage: `PSF tokens burned from FullStack user. TXID: ${txid}`,
-        subject: 'Tokens burned',
-        email: user.email,
-        to: 'test@bchtest.net' // 'chris@bchtest.net'
+      // Attempt to send an email, but don't let errors disrupt the flow of
+      // this function.
+      try {
+        await _this._sendEmail(txid)
+        wlogger.info(`Tokens burned, Email sent for txid: ${txid}`)
+      } catch (err) {
+        wlogger.error(`Failed to send email for txid: ${txid}`, err)
       }
-
-      await _this.nodemailer.sendEmail(data)
 
       // Return the updated credit.
       ctx.body = user.credit
@@ -352,6 +350,28 @@ class ApiTokenController {
 
     if (next) {
       return next()
+    }
+  }
+
+  async _sendEmail (txid) {
+    try {
+      const msg = `
+      PSF tokens burned from FullStack user. TXID:
+      <a href="https://explorer.bitcoin.com/bch/tx/${txid}">${txid}</a>
+      `
+
+      // Send email notification
+      const data = {
+        formMessage: msg,
+        subject: 'Tokens burned',
+        email: config.emailLogin,
+        to: config.emailLogin
+      }
+
+      await _this.nodemailer.sendEmail(data)
+    } catch (err) {
+      wlogger.error('Error in apitoken/controller.js/_sendEmail().')
+      throw err
     }
   }
 
