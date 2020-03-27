@@ -2,8 +2,6 @@ const mongoose = require('mongoose')
 const bcrypt = require('bcryptjs')
 const config = require('../../config')
 const jwt = require('jsonwebtoken')
-const KeyEncoder = require('key-encoder').default
-const keyEncoder = new KeyEncoder('secp256k1')
 const wlogger = require('../lib/wlogger')
 
 const User = new mongoose.Schema({
