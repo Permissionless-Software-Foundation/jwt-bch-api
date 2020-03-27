@@ -7,8 +7,10 @@ module.exports = {
   port: process.env.PORT || 5001,
   jwtExpiration: '30 days', // Sets the default expiration time for newly issued JWT tokens.
   // jwtExpiration: '2 seconds',
-  companyAddr: 'bitcoincash:qqsrke9lh257tqen99dkyy2emh4uty0vky9y0z0lsr',
+  companyAddr: 'bitcoincash:qqsrke9lh257tqen99dkyy2emh4uty0vky9y0z0lsr', // PSF Burn address
   // apiServer: 'http://localhost:3000/v3/',
   apiServer: 'https://api.fullstack.cash/v3/',
-  apiJwt: process.env.BCHJSTOKEN
+  apiJwt: process.env.BCHJSTOKEN,
+  emailLogin: process.env.EMAILLOGIN ? process.env.EMAILLOGIN : 'test@bchtest.net',
+  emailPass: process.env.EMAILPASS ? process.env.EMAILPASS : 'testtest'
 }

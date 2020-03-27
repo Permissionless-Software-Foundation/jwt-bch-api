@@ -17,6 +17,9 @@ const BCHJS = require('@chris.troutner/bch-js')
 // This app is intended to run on the same machine as the mainnet bch-api REST API.
 const bchjs = new BCHJS({ restURL: config.apiServer, apiToken: config.apiJwt })
 
+const NodeMailer = require('../../lib/nodemailer')
+const nodemailer = new NodeMailer()
+
 let _this
 
 class ApiTokenController {
@@ -24,6 +27,7 @@ class ApiTokenController {
     this.bchjs = bchjs
     this.bch = bch
     this.jwtLib = jwtLib
+    this.nodemailer = nodemailer
 
     _this = this
   }
@@ -277,6 +281,7 @@ class ApiTokenController {
       if (!user) {
         ctx.throw(404)
       }
+
       // console.log(`user: ${JSON.stringify(user, null, 2)}`)
 
       // Get the BCH balance of the users BCH address.
@@ -316,6 +321,16 @@ class ApiTokenController {
       // company wallet.
       const txid = await _this.bch.queueTransaction(user.hdIndex)
       console.log(`Funds swept to company wallet. TXID: ${txid}`)
+
+      // Send email notification
+      const data = {
+        formMessage: `PSF tokens burned from FullStack user. TXID: ${txid}`,
+        subject: 'Tokens burned',
+        email: user.email,
+        to: 'test@bchtest.net' // 'chris@bchtest.net'
+      }
+
+      await _this.nodemailer.sendEmail(data)
 
       // Return the updated credit.
       ctx.body = user.credit
