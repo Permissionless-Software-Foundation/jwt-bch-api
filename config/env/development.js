@@ -6,7 +6,7 @@
 
 module.exports = {
   session: 'secret-boilerplate-token',
-  token: 'secret-jwt-token',
+  token: process.env.JWTSECRET ? process.env.JWTSECRET : 'secret-jwt-token',
   database: 'mongodb://localhost:27017/jwt-fullstack-dev',
   env: 'dev'
 }
