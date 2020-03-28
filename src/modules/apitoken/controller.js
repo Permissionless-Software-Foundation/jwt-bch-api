@@ -224,7 +224,7 @@ class ApiTokenController {
       if (!token) throw new Error('Token could not be found in POST body.')
 
       // Validate the JWT token.
-      const decoded = jwt.verify(token, config.token)
+      const decoded = jwt.verify(token, config.tokenSecret)
       // console.log(`decoded: ${JSON.stringify(decoded, null, 2)}`)
 
       // Get user data
