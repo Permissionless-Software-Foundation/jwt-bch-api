@@ -53,6 +53,6 @@ EXPOSE 5001
 
 # Start the application.
 COPY start-production.sh start-production.sh
-CMD ["./start-production"]
+CMD ["./start-production.sh"]
 
 #CMD ["npm", "start"]
