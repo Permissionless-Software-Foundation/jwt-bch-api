@@ -33,7 +33,7 @@ async function ensureUser (ctx, next) {
       //   'pem'
       // )
       // decoded = jwt.verify(token, pemPublicKey, jwtOptions)
-      decoded = jwt.verify(token, config.token)
+      decoded = jwt.verify(token, config.tokenSecret)
     } catch (err) {
       wlogger.debug(`Err: Token could not be decoded: ${err}`)
       ctx.throw(401)
@@ -75,7 +75,7 @@ async function ensureAdmin (ctx, next) {
       // )
       // decoded = jwt.verify(token, pemPublicKey, jwtOptions)
 
-      decoded = jwt.verify(token, config.token)
+      decoded = jwt.verify(token, config.tokenSecret)
     } catch (err) {
       // console.log(`Err: Token could not be decoded: ${err}`)
       ctx.throw(401)
@@ -128,7 +128,7 @@ async function ensureTargetUserOrAdmin (ctx, next) {
       // )
       // decoded = jwt.verify(token, pemPublicKey, jwtOptions)
 
-      decoded = jwt.verify(token, config.token)
+      decoded = jwt.verify(token, config.tokenSecret)
     } catch (err) {
       // console.log(`Err: Token could not be decoded: ${err}`)
       ctx.throw(401)

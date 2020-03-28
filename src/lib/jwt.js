@@ -25,7 +25,7 @@ class JwtUtils {
       // default value
       let decoded = false
 
-      decoded = _this.jwt.verify(token, config.token)
+      decoded = _this.jwt.verify(token, config.tokenSecret)
 
       return decoded
     } catch (err) {

@@ -23,7 +23,7 @@ function generateToken (user) {
     rateLimit: user.rateLimit
   }
 
-  const token = jwt.sign(jwtPayload, config.token, jwtOptions)
+  const token = jwt.sign(jwtPayload, config.tokenSecret, jwtOptions)
   // console.log(`config.token: ${config.token}`)
   // console.log(`generated token: ${token}`)
   return token

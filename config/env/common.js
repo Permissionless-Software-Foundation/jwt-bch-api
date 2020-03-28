@@ -12,5 +12,6 @@ module.exports = {
   apiServer: 'https://api.fullstack.cash/v3/',
   apiJwt: process.env.BCHJSTOKEN,
   emailLogin: process.env.EMAILLOGIN ? process.env.EMAILLOGIN : 'test@bchtest.net',
-  emailPass: process.env.EMAILPASS ? process.env.EMAILPASS : 'testtest'
+  emailPass: process.env.EMAILPASS ? process.env.EMAILPASS : 'testtest',
+  tokenSecret: process.env.TOKENSECRET ? process.env.TOKENSECRET : 'secret-jwt-token'
 }
