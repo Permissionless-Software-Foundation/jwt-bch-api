@@ -52,7 +52,7 @@ RUN npm run docs
 EXPOSE 5001
 
 # Start the application.
-COPY start-production start-production
+COPY start-production.sh start-production.sh
 CMD ["./start-production"]
 
 #CMD ["npm", "start"]
