@@ -4,7 +4,7 @@ mongo-jwt-auth:
   image: mongo:4.2-bionic
   container_name: mongo-jwt-auth
   ports:
-    - "5555:27017" # <host port>:<container port>
+    - "172.17.0.1:5555:27017" # <host port>:<container port>
   volumes:
     - ./database:/data/db
   command: mongod --logpath=/dev/null # -- quiet
