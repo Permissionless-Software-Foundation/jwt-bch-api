@@ -15,9 +15,11 @@ class JwtUtils {
     _this = this
 
     _this.jwt = jwt
+    _this.config = config
   }
 
   // validates and decodes a JWT token. Returns the decoded payload.
+  // If the JWT token has expired, it will return false.
   decodeToken (token) {
     try {
       if (!token) throw new Error('token is empty')
@@ -29,6 +31,8 @@ class JwtUtils {
 
       return decoded
     } catch (err) {
+      // console.log('err: ', err)
+      // console.log(`Expiration: ${err.expiredAt}`)
       console.error('Error in jwt.js/decodeToken')
       throw err
     }
@@ -47,6 +51,31 @@ class JwtUtils {
       return exp
     } catch (err) {
       console.error('Error in jwt.js/getExpiration')
+      throw err
+    }
+  }
+
+  generateToken (user) {
+    try {
+      // console.log(`user: ${JSON.stringify(user, null, 2)}`)
+
+      const jwtOptions = {
+        expiresIn: _this.config.jwtExpiration
+      }
+
+      const jwtPayload = {
+        id: user.id,
+        apiLevel: user.apiLevel,
+        rateLimit: user.rateLimit
+      }
+
+      const token = _this.jwt.sign(jwtPayload, _this.config.tokenSecret, jwtOptions)
+      // console.log(`config.token: ${config.token}`)
+      // console.log(`generated token: ${token}`)
+
+      return token
+    } catch (err) {
+      console.error('Error in jwt.js/generateToken()')
       throw err
     }
   }
