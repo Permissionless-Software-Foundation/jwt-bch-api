@@ -1,8 +1,12 @@
 const mongoose = require('mongoose')
 const bcrypt = require('bcryptjs')
-const config = require('../../config')
-const jwt = require('jsonwebtoken')
+// const jwt = require('jsonwebtoken')
+
+// const config = require('../../config')
 const wlogger = require('../lib/wlogger')
+const JwtUtils = require('../lib/jwt')
+
+const jwtUtils = new JwtUtils()
 
 const User = new mongoose.Schema({
   type: { type: String, default: 'user' },
@@ -90,23 +94,26 @@ User.methods.generateToken = function generateToken () {
   try {
     const user = this
 
-    const jwtOptions = {
-      expiresIn: config.jwtExpiration
-      // algorithm: 'ES256'
-    }
-    // const token = jwt.sign({ id: user.id }, config.token)
+    // const jwtOptions = {
+    //   expiresIn: config.jwtExpiration
+    //   // algorithm: 'ES256'
+    // }
+    // // const token = jwt.sign({ id: user.id }, config.token)
+    //
+    // const jwtPayload = {
+    //   id: user.id,
+    //   apiLevel: user.apiLevel,
+    //   rateLimit: user.rateLimit
+    // }
+    //
+    // const token = jwt.sign(jwtPayload, config.tokenSecret, jwtOptions)
+    // // console.log(`config.token: ${config.token}`)
+    // // console.log(`generated token: ${token}`)
+    // return token
 
-    const jwtPayload = {
-      id: user.id,
-      apiLevel: user.apiLevel,
-      rateLimit: user.rateLimit
-    }
-
-    const token = jwt.sign(jwtPayload, config.tokenSecret, jwtOptions)
-    // console.log(`config.token: ${config.token}`)
-    // console.log(`generated token: ${token}`)
-    return token
+    return jwtUtils.generateToken(user)
   } catch (err) {
+    console.log('err: ', err)
     wlogger.error('Error in models/user.js/generateToken()')
     throw err
   }

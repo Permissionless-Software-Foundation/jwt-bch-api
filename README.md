@@ -1,9 +1,6 @@
 
 # jwt-bch-api
 
-This repository is forked from [jwt-bch-api in the PSF repository](https://github.com/Permissionless-Software-Foundation/jwt-bch-api). It was forked so the Developer Services team can play with the code and evaluate if it's a good fit for our product plan.
-
-
 This is a prototype REST API webserver written in node.js and using this
 [koa webserver boilerplate app](https://github.com/christroutner/koa-api-boilerplate).
 This prototype back end is intended to be paired with
@@ -11,8 +8,8 @@ This prototype back end is intended to be paired with
 
 This very lightweight API server acts as an auth server. It allows:
 - The creation and management of users.
-- The persistance of user data (models) in a Mongo Database.
-- Users can pay BCH to recieve a JWT token to access a REST API or other web service.
+- The persistence of user data (models) in a Mongo Database.
+- Users can pay BCH to receive a JWT token to access a REST API or other web service.
 - REST APIs and web services can quickly query this web server to validate JWT tokens.
 
 

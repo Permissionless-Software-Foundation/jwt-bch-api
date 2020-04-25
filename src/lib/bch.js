@@ -68,7 +68,7 @@ class BCH {
 
       return balance
     } catch (err) {
-      console.error(`Error in bch.js/getBalance()`)
+      console.error('Error in bch.js/getBalance()')
       throw err
     }
   }
@@ -87,7 +87,7 @@ class BCH {
 
       return utxos
     } catch (err) {
-      console.error(`Error in bch.js/getUtxos()`)
+      console.error('Error in bch.js/getUtxos()')
       throw err
     }
   }
@@ -98,13 +98,13 @@ class BCH {
       // console.log(`walletInfo: ${JSON.stringify(walletInfo, null, 2)}`)
 
       if (!walletInfo.derivation) {
-        throw new Error(`walletInfo must have integer derivation value.`)
+        throw new Error('walletInfo must have integer derivation value.')
       }
       // console.log(`walletInfo: ${JSON.stringify(walletInfo, null, 2)}`)
 
       // console.log(`index: ${index}`)
       if (!index && index !== 0) {
-        throw new Error(`index must be a non-negative integer.`)
+        throw new Error('index must be a non-negative integer.')
       }
 
       // root seed buffer
@@ -125,7 +125,7 @@ class BCH {
 
       return change
     } catch (err) {
-      console.log(`Error in bch.js/changeAddrFromMnemonic()`)
+      console.log('Error in bch.js/changeAddrFromMnemonic()')
       throw err
     }
   }
@@ -136,9 +136,9 @@ class BCH {
   async isValidUtxo (utxo) {
     try {
       // Input validation.
-      if (!utxo.txid) throw new Error(`utxo does not have a txid property`)
+      if (!utxo.txid) throw new Error('utxo does not have a txid property')
       if (!utxo.vout && utxo.vout !== 0) {
-        throw new Error(`utxo does not have a vout property`)
+        throw new Error('utxo does not have a vout property')
       }
 
       // console.log(`utxo: ${JSON.stringify(utxo, null, 2)}`)
@@ -161,9 +161,9 @@ class BCH {
       const utxos = await this.getUtxos(fromAddr)
       // console.log(`utxos: ${JSON.stringify(utxos, null, 2)}`)
 
-      if (!Array.isArray(utxos)) throw new Error(`utxos must be an array.`)
+      if (!Array.isArray(utxos)) throw new Error('utxos must be an array.')
 
-      if (utxos.length === 0) throw new Error(`No utxos found.`)
+      if (utxos.length === 0) throw new Error('No utxos found.')
 
       // instance of transaction builder
       const transactionBuilder = new this.bchjs.TransactionBuilder()
@@ -181,7 +181,7 @@ class BCH {
       }
 
       if (originalAmount < 1) {
-        throw new Error(`Original amount is zero. No BCH to send.`)
+        throw new Error('Original amount is zero. No BCH to send.')
       }
 
       // original amount of satoshis in vin
@@ -215,7 +215,7 @@ class BCH {
         const isValid = await this.isValidUtxo(utxo)
         if (!isValid) {
           throw new Error(
-            `Invalid UTXO detected. Wait for indexer to catch up.`
+            'Invalid UTXO detected. Wait for indexer to catch up.'
           )
         }
 
@@ -241,7 +241,7 @@ class BCH {
 
       return hex
     } catch (err) {
-      console.error(`Error in bch.js/sendAllAddr()`)
+      console.error('Error in bch.js/sendAllAddr()')
       throw err
     }
   }
@@ -255,7 +255,7 @@ class BCH {
 
       return txid
     } catch (err) {
-      console.log(`Error in bchjs.js/broadcastTx()`)
+      console.log('Error in bchjs.js/broadcastTx()')
       throw err
     }
   }
@@ -281,10 +281,10 @@ class BCH {
       // If the error is anything other than 'no utxos found', then add
       // the transaction back into the queue to try again later.
       if (
-        err.message.indexOf(`No utxos found`) > -1 ||
-        err.message.indexOf(`Invalid UTXO detected`) > -1
+        err.message.indexOf('No utxos found') > -1 ||
+        err.message.indexOf('Invalid UTXO detected') > -1
       ) {
-        throw new pRetry.AbortError(`No utxos found.`)
+        throw new pRetry.AbortError('No utxos found.')
       }
 
       console.error(`Error in generateTransaction: ${err.message}`)
@@ -320,7 +320,7 @@ class BCH {
 
       return txid
     } catch (err) {
-      console.error(`Error in bch.js/queueTransaction()`)
+      console.error('Error in bch.js/queueTransaction()')
       // console.log(`err.message: ${err.message}`)
       throw err
     }
