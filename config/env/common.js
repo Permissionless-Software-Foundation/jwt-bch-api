@@ -13,5 +13,6 @@ module.exports = {
   apiJwt: process.env.BCHJSTOKEN,
   emailLogin: process.env.EMAILLOGIN ? process.env.EMAILLOGIN : 'test@bchtest.net',
   emailPass: process.env.EMAILPASS ? process.env.EMAILPASS : 'testtest',
-  tokenSecret: process.env.TOKENSECRET ? process.env.TOKENSECRET : 'secret-jwt-token'
+  tokenSecret: process.env.TOKENSECRET ? process.env.TOKENSECRET : 'secret-jwt-token',
+  logPass: 'test'
 }
