@@ -319,7 +319,14 @@ class ApiTokenController {
 
       // Execute some code here to sweep funds from the users address into the
       // company wallet.
-      const txid = await _this.bch.queueTransaction(user.hdIndex)
+      // Don't let errors disrupt the UX, by using a try/catch.
+      let txid = ''
+      try {
+        txid = await _this.bch.queueTransaction(user.hdIndex)
+        wlogger.info(`Fund successfully swept. TXID: ${txid}`)
+      } catch (err) {
+        wlogger.error('Failed to sweep user funds to burn address: ', err)
+      }
 
       // Attempt to send an email, but don't let errors disrupt the flow of
       // this function.
