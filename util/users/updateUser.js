@@ -11,7 +11,7 @@ const config = require('../../config')
 
 const User = require('../../src/models/users')
 
-const USERID = `5e4ed49894d34a6c2c154173`
+const USEREMAIL = 'someone@gmail.com'
 
 async function updateUser () {
   try {
@@ -23,9 +23,10 @@ async function updateUser () {
       { useNewUrlParser: true }
     )
 
-    const user = await User.findById(USERID, '-password')
+    // const user = await User.findById(USERID, '-password')
+    const user = await User.findOne({ email: USEREMAIL }, '-password')
     if (!user) {
-      throw new Error(`Couldn't find user with ID ${USERID}`)
+      throw new Error(`Couldn't find user with email ${USEREMAIL}`)
     }
 
     console.log(`Old user data: ${JSON.stringify(user, null, 2)}`)
@@ -38,7 +39,7 @@ async function updateUser () {
 
     mongoose.connection.close()
   } catch (err) {
-    console.log(`Error: `, err)
+    console.log('Error: ', err)
   }
 }
 updateUser()
