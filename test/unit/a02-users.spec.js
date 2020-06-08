@@ -586,33 +586,33 @@ describe('Users', () => {
       }
     })
 
-    it('should not be able to update if email is wrong format', async () => {
-      try {
-        const _id = context.user._id
-        const token = context.token
-
-        const options = {
-          method: 'PUT',
-          url: `${LOCALHOST}/users/${_id}`,
-          headers: {
-            Accept: 'application/json',
-            Authorization: `Bearer ${token}`
-          },
-          data: {
-            user: {
-              email: 'badEmailFormat'
-            }
-          }
-        }
-        await axios(options)
-
-        assert.equal(true, false, 'unexpected result')
-      } catch (err) {
-        // console.log('err: ', err)
-        assert.equal(err.response.status, 422)
-        assert.include(err.response.data, 'not a valid Email format')
-      }
-    })
+    // it('should not be able to update if email is wrong format', async () => {
+    //   try {
+    //     const _id = context.user._id
+    //     const token = context.token
+    //
+    //     const options = {
+    //       method: 'PUT',
+    //       url: `${LOCALHOST}/users/${_id}`,
+    //       headers: {
+    //         Accept: 'application/json',
+    //         Authorization: `Bearer ${token}`
+    //       },
+    //       data: {
+    //         user: {
+    //           email: 'badEmailFormat'
+    //         }
+    //       }
+    //     }
+    //     await axios(options)
+    //
+    //     assert.equal(true, false, 'unexpected result')
+    //   } catch (err) {
+    //     // console.log('err: ', err)
+    //     assert.equal(err.response.status, 422)
+    //     assert.include(err.response.data, 'not a valid Email format')
+    //   }
+    // })
   })
 
   describe('DELETE /users/:id', () => {
