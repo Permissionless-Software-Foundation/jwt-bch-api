@@ -26,14 +26,14 @@ const User = new mongoose.Schema({
   email: {
     type: String,
     required: true,
-    unique: true,
-    validate: {
-      validator: function (email) {
-        // eslint-disable-next-line no-useless-escape
-        return /^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,3})+$/.test(email)
-      },
-      message: props => `${props.value} is not a valid Email format!`
-    }
+    unique: true
+    // validate: {
+    //   validator: function (email) {
+    //     // eslint-disable-next-line no-useless-escape
+    //     return /^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,3})+$/.test(email)
+    //   },
+    //   message: props => `${props.value} is not a valid Email format!`
+    // }
   }
 })
 

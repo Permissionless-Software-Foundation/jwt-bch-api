@@ -253,16 +253,20 @@ class UserController {
       if (userObj.email && typeof userObj.email !== 'string') {
         throw new Error("Property 'email' must be a string!")
       }
-      const isEmail = await _this.validateEmail(user.email)
-      if (userObj.email && !isEmail) {
-        throw new Error("Property 'email' must be email format!")
-      }
+
+      // const isEmail = await _this.validateEmail(user.email)
+      // if (userObj.email && !isEmail) {
+      //   throw new Error("Property 'email' must be email format!")
+      // }
+
       if (userObj.password && typeof userObj.password !== 'string') {
         throw new Error("Property 'password' must be a string!")
       }
+
       if (userObj.name && typeof userObj.name !== 'string') {
         throw new Error("Property 'name' must be a string!")
       }
+
       if (userObj.projects && !Array.isArray(userObj.projects)) {
         throw new Error("Property 'projects' must be a Array!")
       }
@@ -323,13 +327,13 @@ class UserController {
   }
 
   // Validate Email Format
-  async validateEmail (email) {
-    // eslint-disable-next-line no-useless-escape
-    if (/^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,3})+$/.test(email)) {
-      return true
-    }
-    return false
-  }
+  // async validateEmail (email) {
+  //   // eslint-disable-next-line no-useless-escape
+  //   if (/^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,3})+$/.test(email)) {
+  //     return true
+  //   }
+  //   return false
+  // }
 }
 
 module.exports = UserController
