@@ -5,6 +5,7 @@
 
 module.exports = {
   port: process.env.PORT || 5001,
+  jwtAuthExpiration: '24 hours', // Sets the default expiration time for auth users
   jwtExpiration: '30 days', // Sets the default expiration time for newly issued JWT tokens.
   // jwtExpiration: '2 seconds',
   companyAddr: 'bitcoincash:qqsrke9lh257tqen99dkyy2emh4uty0vky9y0z0lsr', // PSF Burn address
