@@ -2,7 +2,7 @@ const mongoose = require('mongoose')
 const bcrypt = require('bcryptjs')
 // const jwt = require('jsonwebtoken')
 
-// const config = require('../../config')
+const config = require('../../config')
 const wlogger = require('../lib/wlogger')
 const JwtUtils = require('../lib/jwt')
 
@@ -111,9 +111,11 @@ User.methods.generateToken = function generateToken () {
     // // console.log(`generated token: ${token}`)
     // return token
 
-    return jwtUtils.generateToken(user)
+    // JWT expiration time for auth users
+    const expTime = config.jwtAuthExpiration
+    return jwtUtils.generateToken(user, expTime)
   } catch (err) {
-    console.log('err: ', err)
+    // console.log('err: ', err)
     wlogger.error('Error in models/user.js/generateToken()')
     throw err
   }

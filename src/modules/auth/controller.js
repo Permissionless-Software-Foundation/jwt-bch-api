@@ -1,10 +1,15 @@
 const passport = require('koa-passport')
+const getToken = require('../../lib/auth')
+const JWTLIB = require('../../lib/jwt')
+const jwtLib = new JWTLIB()
 
 let _this
 class Auth {
   constructor () {
     _this = this
     this.passport = passport
+    this.getToken = getToken
+    this.jwtLib = jwtLib
   }
   /**
  * @apiDefine TokenError
@@ -103,6 +108,23 @@ class Auth {
       })(ctx, next)
     } catch (error) {
       ctx.throw(401)
+    }
+  }
+
+  // returns the expiration time of a token
+  async getExpirationDate (ctx) {
+    try {
+      const token = _this.getToken(ctx)
+      const exp = _this.jwtLib.getExpiration(token)
+
+      const now = new Date().toISOString()
+
+      ctx.body = {
+        exp,
+        now
+      }
+    } catch (error) {
+      ctx.throw(500)
     }
   }
 }

@@ -55,12 +55,12 @@ class JwtUtils {
     }
   }
 
-  generateToken (user) {
+  generateToken (user, expTime) {
     try {
       // console.log(`user: ${JSON.stringify(user, null, 2)}`)
 
       const jwtOptions = {
-        expiresIn: _this.config.jwtExpiration
+        expiresIn: expTime || _this.config.jwtExpiration
       }
 
       const jwtPayload = {
@@ -72,7 +72,6 @@ class JwtUtils {
       const token = _this.jwt.sign(jwtPayload, _this.config.tokenSecret, jwtOptions)
       // console.log(`config.token: ${config.token}`)
       // console.log(`generated token: ${token}`)
-
       return token
     } catch (err) {
       console.error('Error in jwt.js/generateToken()')
