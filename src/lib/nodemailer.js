@@ -7,6 +7,8 @@ const nodemailer = require('nodemailer')
 
 const config = require('../../config')
 
+// const wlogger = require('./wlogger')
+
 let _this
 
 class NodeMailer {
@@ -15,6 +17,20 @@ class NodeMailer {
     this.config = config
 
     _this = this
+    _this.transporter = _this.createTransporter()
+  }
+
+  createTransporter () {
+    const transporter = _this.nodemailer.createTransport({
+      host: _this.config.emailServer,
+      port: 587,
+      secure: false, // true for 465, false for other ports
+      auth: {
+        user: _this.config.emailUser, // generated ethereal user
+        pass: _this.config.emailPassword // generated ethereal password
+      }
+    })
+    return transporter
   }
 
   // Validate email
@@ -33,20 +49,16 @@ class NodeMailer {
       if (!data.email || typeof data.email !== 'string') {
         throw new Error("Property 'email' must be a string!")
       }
-
-      let isEmail = await _this.validateEmail(data.email)
+      const isEmail = await _this.validateEmail(data.email)
       if (!isEmail) {
         throw new Error("Property 'email' must be email format!")
       }
 
-      if (!data.to || typeof data.to !== 'string') {
-        throw new Error("Property 'to' must be a string!")
+      if (!data.to || !Array.isArray(data.to)) {
+        throw new Error("Property 'to' must be a array!")
       }
 
-      isEmail = await _this.validateEmail(data.to)
-      if (!isEmail) {
-        throw new Error("Property 'to' must be email format!")
-      }
+      await _this.validateEmailArray(data.to)
 
       if (!data.formMessage || typeof data.formMessage !== 'string') {
         throw new Error("Property 'message' must be a string!")

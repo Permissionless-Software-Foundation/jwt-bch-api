@@ -1,5 +1,5 @@
 const app = require('../../bin/server')
-const utils = require('../utils')
+const utils = require('./utils')
 const config = require('../../config')
 const assert = require('chai').assert
 
@@ -21,6 +21,7 @@ describe('Auth', () => {
       password: 'pass'
     }
     const testUser = await utils.createUser(userObj)
+    console.log(`TestUser : ${testUser}`)
 
     context.user = testUser.user
     context.token = testUser.token
@@ -61,8 +62,8 @@ describe('Auth', () => {
             password: 'wrongpassword'
           }
         }
-        await axios.request(options)
 
+        await axios(options)
         assert(false, 'Unexpected result')
       } catch (err) {
         assert(err.response.status === 401, 'Error code 401 expected.')
@@ -81,7 +82,6 @@ describe('Auth', () => {
         }
         const result = await axios(options)
         // console.log(`result: ${JSON.stringify(result.data, null, 2)}`)
-        context.token = result.data.token
 
         assert(result.status === 200, 'Status Code 200 expected.')
         assert(
@@ -93,103 +93,10 @@ describe('Auth', () => {
           'Password expected to be omited'
         )
       } catch (err) {
-        console.log('Error authenticating test user: ', err)
-      }
-    })
-  })
-  describe('GET /auth/expiration', () => {
-    it('should throw 401 if the authorization header is missing', async () => {
-      try {
-        const options = {
-          method: 'GET',
-          url: `${LOCALHOST}/auth/expiration`
-        }
-        await axios(options)
-
-        // console.log(`result: ${JSON.stringify(result, null, 2)}`)
-
-        assert(false, 'Unexpected result')
-      } catch (err) {
-        assert(err.response.status === 401, 'Error code 401 expected.')
-      }
-    })
-
-    it('should throw error if the authorization header is missing the scheme', async () => {
-      try {
-        const options = {
-          method: 'GET',
-          url: `${LOCALHOST}/auth/expiration`,
-          headers: {
-            Accept: 'application/json',
-            Authorization: '1'
-          }
-        }
-
-        await axios(options)
-        assert(false, 'Unexpected result')
-      } catch (err) {
-        assert.equal(err.response.status, 401)
-      }
-    })
-    it('should throw error if the authorization header has invalid scheme', async () => {
-      const { token } = context
-      try {
-        const options = {
-          method: 'GET',
-          url: `${LOCALHOST}/auth/expiration`,
-          headers: {
-            Accept: 'application/json',
-            Authorization: `Unknown ${token}`
-          }
-        }
-
-        await axios(options)
-        assert(false, 'Unexpected result')
-      } catch (err) {
-        assert.equal(err.response.status, 401)
-      }
-    })
-    it('should throw error if token is invalid', async () => {
-      try {
-        const options = {
-          method: 'GET',
-          url: `${LOCALHOST}/auth/expiration`,
-          headers: {
-            Accept: 'application/json',
-            Authorization: 'Bearer 1'
-          }
-        }
-
-        await axios(options)
-        assert(false, 'Unexpected result')
-      } catch (err) {
-        assert.equal(err.response.status, 401)
-      }
-    })
-
-    it('should get token expiration date', async () => {
-      const { token } = context
-      try {
-        const options = {
-          method: 'GET',
-          url: `${LOCALHOST}/auth/expiration`,
-          headers: {
-            Accept: 'application/json',
-            Authorization: `Bearer ${token}`
-          }
-        }
-
-        const result = await axios(options)
-
-        assert.exists(result.data)
-
-        assert.property(result.data, 'now')
-        assert.property(result.data, 'exp')
-
-        assert.isString(result.data.now)
-        assert.isString(result.data.exp)
-      } catch (err) {
-        assert(false, 'Unexpected result')
+        console.log(
+          'Error authenticating test user: ' + JSON.stringify(err, null, 2)
+        )
+        throw err
       }
     })
   })

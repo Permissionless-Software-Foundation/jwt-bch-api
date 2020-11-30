@@ -6,11 +6,33 @@ This is a prototype REST API webserver written in node.js and using this
 This prototype back end is intended to be paired with
 [this front end](https://github.com/Permissionless-Software-Foundation/jwt-bch-frontend).
 
-This very lightweight API server acts as an auth server. It allows:
-- The creation and management of users.
-- The persistence of user data (models) in a Mongo Database.
-- Users can pay BCH to receive a JWT token to access a REST API or other web service.
-- REST APIs and web services can quickly query this web server to validate JWT tokens.
+- Removes babel as a dependency. This repository is now naively compatible with
+  node v8.9 or higher.
+
+- Replaced `bcrypt` dependency with `bcryptjs`. This improves compatibility across
+  versions of node.js and across OSs.
+
+- Configured for Jenkins (continuous integration), Coveralls (code coverage), Green Keeper (automated dependency management), and Semantic Release (automated versioning).
+
+- 'Production' environment is targeted for packaging as a Docker container.
+
+- 'admin' user type added in addition to standard 'user' type. Allows the creation
+of private vs public APIs that only be accessed by an admin. Useful for privileged
+commands like updating and deleting other users.
+
+ - Winston logging integrated for daily rotated logs and a maximum size of
+ 1 megabyte.
+
+ - Linting enforced with [Husky](https://github.com/typicode/husky) and [JavaScript Standard Style rules](https://www.npmjs.com/package/standard).
+
+## Features
+This project covers basic necessities of most APIs.
+* Authentication (passport & jwt)
+* Database (mongoose)
+* Testing (mocha)
+* Doc generation with apidoc
+* Linting using standard
+* Packaged as a Docker container
 
 
 
@@ -83,3 +105,5 @@ Visit `http://localhost:5001/docs/` to view docs
 
 ## License
 MIT
+
+test

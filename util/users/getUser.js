@@ -34,4 +34,3 @@ async function getUser () {
   }
 }
 getUser()
-
