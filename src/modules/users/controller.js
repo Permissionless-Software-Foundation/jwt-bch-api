@@ -1,5 +1,6 @@
 const User = require('../../models/users')
-const util = require('../../lib/utils/json-files')
+const Util = require('../../lib/utils/json-files')
+const util = new Util()
 
 const wlogger = require('../../lib/wlogger')
 
@@ -109,6 +110,7 @@ class UserController {
       }
     } catch (err) {
       wlogger.debug('createUser() returning error: ', err.message)
+      console.log('Error in createUser(): ', err)
       ctx.throw(422, err.message)
     }
   }
