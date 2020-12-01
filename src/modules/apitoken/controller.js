@@ -385,7 +385,7 @@ class ApiTokenController {
         formMessage: msg,
         subject: 'Tokens burned',
         email: config.emailLogin,
-        to: config.emailLogin
+        to: [config.emailLogin]
       }
 
       await _this.nodemailer.sendEmail(data)

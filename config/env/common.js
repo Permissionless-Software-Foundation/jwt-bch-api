@@ -16,5 +16,7 @@ module.exports = {
   emailPass: process.env.EMAILPASS ? process.env.EMAILPASS : 'testtest',
   tokenSecret: process.env.TOKENSECRET ? process.env.TOKENSECRET : 'secret-jwt-token',
   logPass: 'test',
-  apiTokenPrice: 0.05 // Price in USD.
+
+  // Price in USD for a bch-js JWT token.
+  apiTokenPrice: process.env.TOKENPRICE ? process.env.TOKENPRICE : 14.99
 }
