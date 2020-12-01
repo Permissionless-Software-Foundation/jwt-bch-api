@@ -1,4 +1,5 @@
-const validator = require('../../middleware/validators')
+const Validator = require('../../middleware/validators')
+const validator = new Validator()
 
 const ApiTokenController = require('./controller')
 const apiTokenController = new ApiTokenController()

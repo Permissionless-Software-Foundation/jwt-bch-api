@@ -5,7 +5,7 @@
 // const testUtils = require('../utils')
 // const rp = require('request-promise')
 const assert = require('chai').assert
-const config = require('../../config')
+// const config = require('../../config')
 // const sinon = require('sinon')
 
 const BCH = require('../../src/lib/bch')

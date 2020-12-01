@@ -1,5 +1,6 @@
 const User = require('../../models/users')
-const util = require('../../lib/utils/json-files')
+const Util = require('../../lib/utils/json-files')
+const util = new Util()
 
 const wlogger = require('../../lib/wlogger')
 
@@ -58,11 +59,14 @@ class UserController {
    *     }
    */
   async createUser (ctx) {
-    const user = new _this.User(ctx.request.body.user)
-
+    const userObj = ctx.request.body.user
     try {
-      // Input validation.
-      if (!user.email || typeof user.email !== 'string') {
+      /*
+       * ERROR HANDLERS
+       *
+       */
+      // Required property
+      if (!userObj.email || typeof userObj.email !== 'string') {
         throw new Error("Property 'email' must be a string!")
       }
 
@@ -73,14 +77,15 @@ class UserController {
       //   throw new Error("Property 'email' must be email format!")
       // }
 
-      if (!user.password || typeof user.password !== 'string') {
+      if (!userObj.password || typeof userObj.password !== 'string') {
         throw new Error("Property 'password' must be a string!")
       }
 
-      if (user.name && typeof user.name !== 'string') {
+      if (userObj.name && typeof userObj.name !== 'string') {
         throw new Error("Property 'name' must be a string!")
       }
 
+      const user = new _this.User(userObj)
       // Enforce default value of 'user'
       user.type = 'user'
 
@@ -105,6 +110,7 @@ class UserController {
       }
     } catch (err) {
       wlogger.debug('createUser() returning error: ', err.message)
+      // console.log('Error in createUser(): ', err)
       ctx.throw(422, err.message)
     }
   }
@@ -174,6 +180,7 @@ class UserController {
    *
    * @apiUse TokenError
    */
+
   async getUser (ctx, next) {
     try {
       const user = await _this.User.findById(ctx.params.id, '-password')
@@ -185,12 +192,18 @@ class UserController {
         user
       }
     } catch (err) {
-      if (err === 404 || err.name === 'CastError') {
+      // Handle different error types.
+      if (
+        err === 404 ||
+        err.name === 'CastError' ||
+        err.message.toString().includes('Not Found')
+      ) {
         ctx.throw(404)
       }
 
       ctx.throw(500)
     }
+
     if (next) {
       return next()
     }

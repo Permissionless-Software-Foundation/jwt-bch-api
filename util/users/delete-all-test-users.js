@@ -27,4 +27,5 @@ async function deleteUsers () {
 
   mongoose.connection.close()
 }
+
 deleteUsers()

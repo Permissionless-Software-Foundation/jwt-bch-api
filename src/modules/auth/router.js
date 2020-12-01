@@ -2,7 +2,8 @@
 const CONTROLLER = require('./controller')
 const controller = new CONTROLLER()
 
-const validator = require('../../middleware/validators')
+const Validator = require('../../middleware/validators')
+const validator = new Validator()
 
 // export const baseUrl = '/auth'
 module.exports.baseUrl = '/auth'
