@@ -7,7 +7,7 @@ const nodemailer = require('nodemailer')
 
 const config = require('../../config')
 
-// const wlogger = require('./wlogger')
+const wlogger = require('./wlogger')
 
 let _this
 
@@ -116,9 +116,47 @@ class NodeMailer {
         // html: '<b>This is a test email</b>' // html body
         html: htmlMsg
       })
+
       console.log('Message sent: %s', info.messageId)
+
+      return info
     } catch (err) {
       console.log('Error in sendEmail()')
+      throw err
+    }
+  }
+
+  async validateEmailArray (emailList) {
+    try {
+      if (!emailList || !Array.isArray(emailList)) {
+        throw new Error("Property 'emailList' must be a array!")
+      }
+      //  Email list can't be empty
+      if (!emailList.length > 0) {
+        throw new Error("Property 'emailList' cant be empty!")
+      }
+
+      // Iterates the array and validates each email format
+      const isValid = await new Promise(resolve => {
+        emailList.map(async (value, i) => {
+          const isEmail = await _this.validateEmail(value)
+
+          if (!isEmail) {
+            resolve(false)
+          }
+          if (i >= emailList.length - 1) {
+            resolve(true)
+          }
+        })
+      })
+
+      if (!isValid) {
+        throw new Error('Array must contain emails format!')
+      }
+
+      return true
+    } catch (err) {
+      wlogger.error('Error in lib/nodemailer.js/validateEmailArray()')
       throw err
     }
   }

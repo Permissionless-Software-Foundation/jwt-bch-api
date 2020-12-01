@@ -110,7 +110,7 @@ class UserController {
       }
     } catch (err) {
       wlogger.debug('createUser() returning error: ', err.message)
-      console.log('Error in createUser(): ', err)
+      // console.log('Error in createUser(): ', err)
       ctx.throw(422, err.message)
     }
   }

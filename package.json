@@ -5,8 +5,8 @@
   "main": "auth-api.js",
   "scripts": {
     "start": "node auth-api.js",
-    "test": "export AUTH_ENV=test && npm run prep-test && mocha --timeout 15000 --exit test/unit/",
-    "test:integration": "export AUTH_ENV=test && npm run prep-test && ./node_modules/.bin/mocha --timeout 25000 --exit test/integration/",
+    "test": "export AUTH_ENV=test && npm run prep-test && nyc --reporter=text mocha --timeout 15000 --exit test/unit/",
+    "test:integration": "export AUTH_ENV=test && npm run prep-test && mocha --timeout 25000 --exit test/integration/",
     "lint": "standard --env mocha --fix",
     "docs": "./node_modules/.bin/apidoc -i src/ -o docs",
     "coverage": "nyc report --reporter=text-lcov | coveralls",
