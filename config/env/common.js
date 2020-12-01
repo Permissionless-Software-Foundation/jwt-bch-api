@@ -10,10 +10,11 @@ module.exports = {
   // jwtExpiration: '2 seconds',
   companyAddr: 'bitcoincash:qqsrke9lh257tqen99dkyy2emh4uty0vky9y0z0lsr', // PSF Burn address
   // apiServer: 'http://localhost:3000/v3/',
-  apiServer: 'https://api.fullstack.cash/v3/',
+  apiServer: 'https://bchn.fullstack.cash/v3/',
   apiJwt: process.env.BCHJSTOKEN,
   emailLogin: process.env.EMAILLOGIN ? process.env.EMAILLOGIN : 'test@bchtest.net',
   emailPass: process.env.EMAILPASS ? process.env.EMAILPASS : 'testtest',
   tokenSecret: process.env.TOKENSECRET ? process.env.TOKENSECRET : 'secret-jwt-token',
-  logPass: 'test'
+  logPass: 'test',
+  apiTokenPrice: 0.05 // Price in USD.
 }

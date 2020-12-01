@@ -1,7 +1,11 @@
+// Public npm libraries.
+const jwt = require('jsonwebtoken')
+const BchUtil = require('bch-util')
+
+// Local libraries.
 const User = require('../../models/users')
 const apiTokenLib = require('../../lib/api-token')
 const config = require('../../../config')
-const jwt = require('jsonwebtoken')
 
 const JwtLib = require('../../lib/jwt')
 const jwtLib = new JwtLib()
@@ -28,6 +32,8 @@ class ApiTokenController {
     this.bch = bch
     this.jwtLib = jwtLib
     this.nodemailer = nodemailer
+    this.config = config
+    this.bchUtil = new BchUtil({ bchjs: this.bchjs })
 
     _this = this
   }
@@ -87,10 +93,8 @@ class ApiTokenController {
   async newToken (ctx, next) {
     // Assumed values:
     // 0 = anonymous
-    // 10 = free tier
-    // 20 = full node ($10)
-    // 30 = indexer ($20)
-    // 40 = SLP ($30)
+    // 40 = Full Access ($14.99)
+    // TODO: Add 20% discount if paid in BCHA or PSF tokens.
     try {
       // console.log(`ctx.request.body: ${JSON.stringify(ctx.request.body, null, 2)}`)
       let newApiLevel = ctx.request.body.apiLevel
@@ -120,11 +124,11 @@ class ApiTokenController {
       }
 
       // Check against balance.
-      if (user.credit < newApiLevel - 10) ctx.throw(402, 'Not enough credit')
+      if (user.credit < _this.config.apiTokenPrice) ctx.throw(402, 'Not enough credit')
 
       // Deduct credit for the new token.
       if (newApiLevel > 10) {
-        user.credit = user.credit - newApiLevel + 10
+        user.credit = user.credit - _this.config.apiTokenPrice
         // console.log(`user.credit: ${user.credit}`)
       }
 
@@ -172,27 +176,36 @@ class ApiTokenController {
   _calculateRefund (user) {
     try {
       // console.log(`user: ${JSON.stringify(user, null, 2)}`)
+
+      // Refund 0 if existing JWT token was free.
       const oldApiLevel = user.apiLevel
+      if (oldApiLevel < 11) {
+        return 0
+      }
 
       const decoded = jwt.decode(user.apiToken)
       // console.log(`decoded: ${JSON.stringify(decoded, null, 2)}`)
 
+      // Expiration date recorded in the JWT token.
       const exp = decoded.exp
+
       let now = new Date()
       now = now / 1000
 
+      // Calculate the time difference in days.
       let diff = exp - now
       diff = diff * 1000 // Convert back to JS Date.
       diff = diff / (1000 * 60 * 60 * 24) // Convert to days.
       // console.log(`Time left: ${diff} days`)
 
-      let refund = (diff / 30) * (oldApiLevel - 10)
+      let refund = (diff / 30) * (_this.config.apiTokenPrice)
 
+      // Handle negative amounts.
       if (refund < 0) refund = 0
 
       wlogger.info(`refunding ${refund} dollars`)
 
-      return refund
+      return this.bchUtil.util.round2(refund)
     } catch (err) {
       console.error('Error in apiToken controller.js/_calculateRefund()')
       throw err
