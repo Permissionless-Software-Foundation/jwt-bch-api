@@ -65,5 +65,6 @@ system-user-*.json
 
 # Specific to jwt-bch-api
 wallet.json
+auth-api.sh
 
 !README.md

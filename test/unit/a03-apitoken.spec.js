@@ -223,78 +223,7 @@ describe('API Token', () => {
       assert.isString(apiToken.apiToken)
     })
 
-    it('should get a new, $10 API key', async () => {
-      const token = context.testUser.token
-
-      // Update the credit level of the test user.
-      context.testUser.credit = 100.0
-      await testUtils.updateUser(context.testUser)
-
-      const options = {
-        method: 'POST',
-        url: `${LOCALHOST}/apitoken/new`,
-        headers: {
-          Authorization: `Bearer ${token}`
-        },
-        data: {
-          apiLevel: 20
-        }
-      }
-
-      const result = await axios(options)
-      const apiToken = result.data
-      // console.log(`apiToken: ${util.inspect(apiToken)}`)
-
-      // Should recieve a new API token.
-      assert.isString(apiToken.apiToken)
-      assert.equal(apiToken.apiLevel, 20)
-
-      const newUserData = await testUtils.loginTestUser()
-      // console.log(`newUserData: ${JSON.stringify(newUserData, null, 2)}`)
-
-      assert.equal(
-        newUserData.credit,
-        90,
-        'should deduct $10 of credit from account'
-      )
-    })
-
-    it('should get a new, $20 API key', async () => {
-      const token = context.testUser.token
-
-      // Update the credit level of the test user.
-      context.testUser.credit = 100.0
-      await testUtils.updateUser(context.testUser)
-
-      const options = {
-        method: 'POST',
-        url: `${LOCALHOST}/apitoken/new`,
-        headers: {
-          Authorization: `Bearer ${token}`
-        },
-        data: {
-          apiLevel: 30
-        }
-      }
-
-      const result = await axios(options)
-      const apiToken = result.data
-      // console.log(`apiToken: ${util.inspect(apiToken)}`)
-
-      // Should recieve a new API token.
-      assert.isString(apiToken.apiToken)
-      assert.equal(apiToken.apiLevel, 30)
-
-      const newUserData = await testUtils.loginTestUser()
-      // console.log(`newUserData: ${JSON.stringify(newUserData, null, 2)}`)
-
-      // Should refund $10 from last API token, so balance should be around
-      // $90.
-      assert.isBelow(newUserData.credit, 91)
-      assert.isAbove(newUserData.credit, 89)
-    })
-
-    it('should get a new, $30 API key', async () => {
+    it('should deduct the cost of a JWT token from the users balance', async () => {
       const token = context.testUser.token
 
       // Update the credit level of the test user.
@@ -323,11 +252,119 @@ describe('API Token', () => {
       const newUserData = await testUtils.loginTestUser()
       // console.log(`newUserData: ${JSON.stringify(newUserData, null, 2)}`)
 
-      // Should refund $10 from last API token, so balance should be around
-      // $90.
-      assert.isBelow(newUserData.credit, 91)
-      assert.isAbove(newUserData.credit, 89)
+      // Should deduct the cost of a new JWT token.
+      assert.equal(
+        newUserData.credit,
+        100 - config.apiTokenPrice,
+        `should deduct ${config.apiTokenPrice} of credit from account`
+      )
     })
+
+    // it('should get a new, $10 API key', async () => {
+    //   const token = context.testUser.token
+    //
+    //   // Update the credit level of the test user.
+    //   context.testUser.credit = 100.0
+    //   await testUtils.updateUser(context.testUser)
+    //
+    //   const options = {
+    //     method: 'POST',
+    //     url: `${LOCALHOST}/apitoken/new`,
+    //     headers: {
+    //       Authorization: `Bearer ${token}`
+    //     },
+    //     data: {
+    //       apiLevel: 20
+    //     }
+    //   }
+    //
+    //   const result = await axios(options)
+    //   const apiToken = result.data
+    //   // console.log(`apiToken: ${util.inspect(apiToken)}`)
+    //
+    //   // Should recieve a new API token.
+    //   assert.isString(apiToken.apiToken)
+    //   assert.equal(apiToken.apiLevel, 20)
+    //
+    //   const newUserData = await testUtils.loginTestUser()
+    //   // console.log(`newUserData: ${JSON.stringify(newUserData, null, 2)}`)
+    //
+    //   assert.equal(
+    //     newUserData.credit,
+    //     90,
+    //     'should deduct $10 of credit from account'
+    //   )
+    // })
+    //
+    // it('should get a new, $20 API key', async () => {
+    //   const token = context.testUser.token
+    //
+    //   // Update the credit level of the test user.
+    //   context.testUser.credit = 100.0
+    //   await testUtils.updateUser(context.testUser)
+    //
+    //   const options = {
+    //     method: 'POST',
+    //     url: `${LOCALHOST}/apitoken/new`,
+    //     headers: {
+    //       Authorization: `Bearer ${token}`
+    //     },
+    //     data: {
+    //       apiLevel: 30
+    //     }
+    //   }
+    //
+    //   const result = await axios(options)
+    //   const apiToken = result.data
+    //   // console.log(`apiToken: ${util.inspect(apiToken)}`)
+    //
+    //   // Should recieve a new API token.
+    //   assert.isString(apiToken.apiToken)
+    //   assert.equal(apiToken.apiLevel, 30)
+    //
+    //   const newUserData = await testUtils.loginTestUser()
+    //   // console.log(`newUserData: ${JSON.stringify(newUserData, null, 2)}`)
+    //
+    //   // Should refund $10 from last API token, so balance should be around
+    //   // $90.
+    //   assert.isBelow(newUserData.credit, 91)
+    //   assert.isAbove(newUserData.credit, 89)
+    // })
+    //
+    // it('should get a new, $30 API key', async () => {
+    //   const token = context.testUser.token
+    //
+    //   // Update the credit level of the test user.
+    //   context.testUser.credit = 100.0
+    //   await testUtils.updateUser(context.testUser)
+    //
+    //   const options = {
+    //     method: 'POST',
+    //     url: `${LOCALHOST}/apitoken/new`,
+    //     headers: {
+    //       Authorization: `Bearer ${token}`
+    //     },
+    //     data: {
+    //       apiLevel: 40
+    //     }
+    //   }
+    //
+    //   const result = await axios(options)
+    //   const apiToken = result.data
+    //   // console.log(`apiToken: ${util.inspect(apiToken)}`)
+    //
+    //   // Should recieve a new API token.
+    //   assert.isString(apiToken.apiToken)
+    //   assert.equal(apiToken.apiLevel, 40)
+    //
+    //   const newUserData = await testUtils.loginTestUser()
+    //   // console.log(`newUserData: ${JSON.stringify(newUserData, null, 2)}`)
+    //
+    //   // Should refund $10 from last API token, so balance should be around
+    //   // $90.
+    //   assert.isBelow(newUserData.credit, 91)
+    //   assert.isAbove(newUserData.credit, 89)
+    // })
 
     // This test case comes from a bug that was discovered. Newly issued JWT
     // tokens were being generated with the old apiLevel, rather than the new
@@ -519,30 +556,43 @@ describe('API Token', () => {
       assert.equal(result, 0)
     })
 
-    it('should calculate a refund for a $10 account', () => {
+    // it('should calculate a refund for a $10 account', () => {
+    //   // Generate user mock data. Replace JWT token with up-to-date version.
+    //   const user = Object.assign({}, mockData.userMock)
+    //   user.apiToken = context.testUser.apiToken
+    //   user.apiLevel = 20
+    //
+    //   const result = apiTokenController._calculateRefund(user)
+    //   // console.log(`result: ${JSON.stringify(result, null, 2)}`)
+    //
+    //   assert.isBelow(result, 10)
+    //   assert.isAbove(result, 9)
+    // })
+
+    // it('should calculate a refund for a $20 account', () => {
+    //   // Generate user mock data. Replace JWT token with up-to-date version.
+    //   const user = Object.assign({}, mockData.userMock)
+    //   user.apiToken = context.testUser.apiToken
+    //   user.apiLevel = 30
+    //
+    //   const result = apiTokenController._calculateRefund(user)
+    //   // console.log(`result: ${JSON.stringify(result, null, 2)}`)
+    //
+    //   assert.isBelow(result, 20)
+    //   assert.isAbove(result, 19)
+    // })
+
+    it('should calculate a refund for a paid token', () => {
       // Generate user mock data. Replace JWT token with up-to-date version.
       const user = Object.assign({}, mockData.userMock)
       user.apiToken = context.testUser.apiToken
-      user.apiLevel = 20
-
-      const result = apiTokenController._calculateRefund(user)
-      // console.log(`result: ${JSON.stringify(result, null, 2)}`)
-
-      assert.isBelow(result, 10)
-      assert.isAbove(result, 9)
-    })
-
-    it('should calculate a refund for a $20 account', () => {
-      // Generate user mock data. Replace JWT token with up-to-date version.
-      const user = Object.assign({}, mockData.userMock)
-      user.apiToken = context.testUser.apiToken
-      user.apiLevel = 30
+      user.apiLevel = 40
 
       const result = apiTokenController._calculateRefund(user)
       // console.log(`result: ${JSON.stringify(result, null, 2)}`)
 
       assert.isBelow(result, 20)
-      assert.isAbove(result, 19)
+      assert.isAbove(result, 10)
     })
   })
 

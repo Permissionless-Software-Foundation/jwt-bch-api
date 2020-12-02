@@ -1,7 +1,11 @@
+// Public npm libraries.
+const jwt = require('jsonwebtoken')
+const BchUtil = require('bch-util')
+
+// Local libraries.
 const User = require('../../models/users')
 const apiTokenLib = require('../../lib/api-token')
 const config = require('../../../config')
-const jwt = require('jsonwebtoken')
 
 const JwtLib = require('../../lib/jwt')
 const jwtLib = new JwtLib()
@@ -12,7 +16,7 @@ const wlogger = require('../../lib/wlogger')
 const BCH = require('../../lib/bch')
 const bch = new BCH()
 
-const BCHJS = require('@chris.troutner/bch-js')
+const BCHJS = require('@psf/bch-js')
 
 // This app is intended to run on the same machine as the mainnet bch-api REST API.
 const bchjs = new BCHJS({ restURL: config.apiServer, apiToken: config.apiJwt })
@@ -28,6 +32,8 @@ class ApiTokenController {
     this.bch = bch
     this.jwtLib = jwtLib
     this.nodemailer = nodemailer
+    this.config = config
+    this.bchUtil = new BchUtil({ bchjs: this.bchjs })
 
     _this = this
   }
@@ -87,14 +93,12 @@ class ApiTokenController {
   async newToken (ctx, next) {
     // Assumed values:
     // 0 = anonymous
-    // 10 = free tier
-    // 20 = full node ($10)
-    // 30 = indexer ($20)
-    // 40 = SLP ($30)
+    // 40 = Full Access ($14.99)
+    // TODO: Add 20% discount if paid in BCHA or PSF tokens.
     try {
       // console.log(`ctx.request.body: ${JSON.stringify(ctx.request.body, null, 2)}`)
       let newApiLevel = ctx.request.body.apiLevel
-      // console.log(`Requesting API level: ${newApiLevel}`)
+      console.log(`Requesting API level: ${newApiLevel}`)
 
       // Throw error if apiLevel is not included.
       if ((newApiLevel !== 0 && !newApiLevel) || isNaN(newApiLevel)) {
@@ -114,19 +118,24 @@ class ApiTokenController {
       if (user.apiLevel > 10) {
         const refund = _this._calculateRefund(user)
 
-        // console.log(`refund: ${refund}`)
+        console.log(`refund: ${refund}`)
 
         user.credit += refund
       }
 
       // Check against balance.
-      if (user.credit < newApiLevel - 10) ctx.throw(402, 'Not enough credit')
+      if (user.credit < _this.config.apiTokenPrice) {
+        ctx.throw(402, 'Not enough credit')
+      }
 
       // Deduct credit for the new token.
       if (newApiLevel > 10) {
-        user.credit = user.credit - newApiLevel + 10
-        // console.log(`user.credit: ${user.credit}`)
+        user.credit = user.credit - _this.config.apiTokenPrice
+
+        // Round to the nearest cent
+        user.credit = _this.bchUtil.util.round2(user.credit)
       }
+      console.log(`user.credit after new token: ${user.credit}`)
 
       // Set the new API level
       // Dev note: this must be done before generating a new token.
@@ -154,7 +163,8 @@ class ApiTokenController {
       ctx.body = {
         apiToken: token,
         apiTokenExp: tokenExp,
-        apiLevel: newApiLevel
+        apiLevel: newApiLevel,
+        credit: user.credit
       }
     } catch (err) {
       if (err.status) ctx.throw(err.status, err.message)
@@ -172,23 +182,35 @@ class ApiTokenController {
   _calculateRefund (user) {
     try {
       // console.log(`user: ${JSON.stringify(user, null, 2)}`)
+
+      // Refund 0 if existing JWT token was free.
       const oldApiLevel = user.apiLevel
+      if (oldApiLevel < 11) {
+        return 0
+      }
 
       const decoded = jwt.decode(user.apiToken)
       // console.log(`decoded: ${JSON.stringify(decoded, null, 2)}`)
 
+      // Expiration date recorded in the JWT token.
       const exp = decoded.exp
+
       let now = new Date()
       now = now / 1000
 
+      // Calculate the time difference in days.
       let diff = exp - now
       diff = diff * 1000 // Convert back to JS Date.
       diff = diff / (1000 * 60 * 60 * 24) // Convert to days.
       // console.log(`Time left: ${diff} days`)
 
-      let refund = (diff / 30) * (oldApiLevel - 10)
+      let refund = (diff / 30) * _this.config.apiTokenPrice
 
+      // Handle negative amounts.
       if (refund < 0) refund = 0
+
+      // Round to the nearest cent.
+      refund = this.bchUtil.util.round2(refund)
 
       wlogger.info(`refunding ${refund} dollars`)
 
@@ -283,13 +305,18 @@ class ApiTokenController {
       }
 
       // console.log(`user: ${JSON.stringify(user, null, 2)}`)
+      console.log(`user starting credit: ${user.credit}`)
 
       // Get the BCH balance of the users BCH address.
-      const balance = await _this.bchjs.Blockbook.balance(user.bchAddr)
+      // const balance = await _this.bchjs.Blockbook.balance(user.bchAddr)
+      const fulcrumBalance = await _this.bchjs.Electrumx.balance(user.bchAddr)
+      const balance =
+        fulcrumBalance.balance.confirmed + fulcrumBalance.balance.unconfirmed
       // console.log(`balance: ${JSON.stringify(balance, null, 2)}`)
 
-      let totalBalance =
-        Number(balance.balance) + Number(balance.unconfirmedBalance)
+      // let totalBalance =
+      //   Number(balance.balance) + Number(balance.unconfirmedBalance)
+      let totalBalance = balance
 
       // Return existing credit if totalBalance is zero.
       if (totalBalance === 0) {
@@ -301,21 +328,18 @@ class ApiTokenController {
       totalBalance = _this.bchjs.BitcoinCash.toBitcoinCash(totalBalance)
 
       // Get the price of BCH in USD
-      let bchPrice = await _this.bchjs.Price.current('usd')
-      bchPrice = bchPrice / 100
-      // console.log(`price: ${bchPrice}`)
+      const bchPrice = await _this.bchjs.Price.getUsd()
+      // bchPrice = bchPrice / 100
+      console.log(`price: ${bchPrice}`)
 
       // Calculate the amount of credit.
       const newCredit = bchPrice * totalBalance
+      const oldCredit = user.credit
 
       user.credit = user.credit + newCredit
 
-      // Update the user data in the DB.
-      try {
-        await user.save()
-      } catch (err) {
-        ctx.throw(422, err.message)
-      }
+      // round to the nearest cent.
+      user.credit = _this.bchUtil.util.round2(user.credit)
 
       // Execute some code here to sweep funds from the users address into the
       // company wallet.
@@ -328,14 +352,31 @@ class ApiTokenController {
         wlogger.error('Failed to sweep user funds to burn address: ', err)
       }
 
-      // Attempt to send an email, but don't let errors disrupt the flow of
-      // this function.
-      try {
-        await _this._sendEmail(txid)
-        wlogger.info(`Tokens burned, Email sent for txid: ${txid}`)
-      } catch (err) {
-        wlogger.error(`Failed to send email for txid: ${txid}`, err)
+      // Only update user model or send the email if the transaction succeeded.
+      // This can happen if this API endpoint is called twice rapidly, and
+      // the indexer hasn't had a chance to update its state.
+      if (txid) {
+        // Update the user data in the DB.
+        try {
+          await user.save()
+        } catch (err) {
+          ctx.throw(422, err.message)
+        }
+
+        // Attempt to send an email, but don't let errors disrupt the flow of
+        // this function.
+        try {
+          await _this._sendEmail(txid)
+          wlogger.info(`Tokens burned, Email sent for txid: ${txid}`)
+        } catch (err) {
+          wlogger.error(`Failed to send email for txid: ${txid}`, err)
+        }
+      } else {
+        console.log('Error processing transaction. Original user credit used.')
+        user.credit = oldCredit
       }
+
+      console.log(`user ending credit: ${user.credit}`)
 
       // Return the updated credit.
       ctx.body = user.credit
@@ -372,7 +413,7 @@ class ApiTokenController {
         formMessage: msg,
         subject: 'Tokens burned',
         email: config.emailLogin,
-        to: config.emailLogin
+        to: [config.emailLogin]
       }
 
       await _this.nodemailer.sendEmail(data)
