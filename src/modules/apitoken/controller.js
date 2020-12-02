@@ -16,7 +16,7 @@ const wlogger = require('../../lib/wlogger')
 const BCH = require('../../lib/bch')
 const bch = new BCH()
 
-const BCHJS = require('@chris.troutner/bch-js')
+const BCHJS = require('@psf/bch-js')
 
 // This app is intended to run on the same machine as the mainnet bch-api REST API.
 const bchjs = new BCHJS({ restURL: config.apiServer, apiToken: config.apiJwt })
@@ -298,11 +298,14 @@ class ApiTokenController {
       // console.log(`user: ${JSON.stringify(user, null, 2)}`)
 
       // Get the BCH balance of the users BCH address.
-      const balance = await _this.bchjs.Blockbook.balance(user.bchAddr)
+      // const balance = await _this.bchjs.Blockbook.balance(user.bchAddr)
+      const fulcrumBalance = await _this.bchjs.Electrumx.balance(user.bchAddr)
+      const balance = fulcrumBalance.balance.confirmed + fulcrumBalance.balance.unconfirmed
       // console.log(`balance: ${JSON.stringify(balance, null, 2)}`)
 
-      let totalBalance =
-        Number(balance.balance) + Number(balance.unconfirmedBalance)
+      // let totalBalance =
+      //   Number(balance.balance) + Number(balance.unconfirmedBalance)
+      let totalBalance = balance
 
       // Return existing credit if totalBalance is zero.
       if (totalBalance === 0) {
@@ -314,9 +317,9 @@ class ApiTokenController {
       totalBalance = _this.bchjs.BitcoinCash.toBitcoinCash(totalBalance)
 
       // Get the price of BCH in USD
-      let bchPrice = await _this.bchjs.Price.current('usd')
-      bchPrice = bchPrice / 100
-      // console.log(`price: ${bchPrice}`)
+      const bchPrice = await _this.bchjs.Price.getUsd()
+      // bchPrice = bchPrice / 100
+      console.log(`price: ${bchPrice}`)
 
       // Calculate the amount of credit.
       const newCredit = bchPrice * totalBalance
