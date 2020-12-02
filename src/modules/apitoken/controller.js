@@ -98,7 +98,7 @@ class ApiTokenController {
     try {
       // console.log(`ctx.request.body: ${JSON.stringify(ctx.request.body, null, 2)}`)
       let newApiLevel = ctx.request.body.apiLevel
-      // console.log(`Requesting API level: ${newApiLevel}`)
+      console.log(`Requesting API level: ${newApiLevel}`)
 
       // Throw error if apiLevel is not included.
       if ((newApiLevel !== 0 && !newApiLevel) || isNaN(newApiLevel)) {
@@ -118,19 +118,24 @@ class ApiTokenController {
       if (user.apiLevel > 10) {
         const refund = _this._calculateRefund(user)
 
-        // console.log(`refund: ${refund}`)
+        console.log(`refund: ${refund}`)
 
         user.credit += refund
       }
 
       // Check against balance.
-      if (user.credit < _this.config.apiTokenPrice) ctx.throw(402, 'Not enough credit')
+      if (user.credit < _this.config.apiTokenPrice) {
+        ctx.throw(402, 'Not enough credit')
+      }
 
       // Deduct credit for the new token.
       if (newApiLevel > 10) {
         user.credit = user.credit - _this.config.apiTokenPrice
-        // console.log(`user.credit: ${user.credit}`)
+
+        // Round to the nearest cent
+        user.credit = _this.bchUtil.util.round2(user.credit)
       }
+      console.log(`user.credit after new token: ${user.credit}`)
 
       // Set the new API level
       // Dev note: this must be done before generating a new token.
@@ -158,7 +163,8 @@ class ApiTokenController {
       ctx.body = {
         apiToken: token,
         apiTokenExp: tokenExp,
-        apiLevel: newApiLevel
+        apiLevel: newApiLevel,
+        credit: user.credit
       }
     } catch (err) {
       if (err.status) ctx.throw(err.status, err.message)
@@ -198,14 +204,17 @@ class ApiTokenController {
       diff = diff / (1000 * 60 * 60 * 24) // Convert to days.
       // console.log(`Time left: ${diff} days`)
 
-      let refund = (diff / 30) * (_this.config.apiTokenPrice)
+      let refund = (diff / 30) * _this.config.apiTokenPrice
 
       // Handle negative amounts.
       if (refund < 0) refund = 0
 
+      // Round to the nearest cent.
+      refund = this.bchUtil.util.round2(refund)
+
       wlogger.info(`refunding ${refund} dollars`)
 
-      return this.bchUtil.util.round2(refund)
+      return refund
     } catch (err) {
       console.error('Error in apiToken controller.js/_calculateRefund()')
       throw err
@@ -296,11 +305,13 @@ class ApiTokenController {
       }
 
       // console.log(`user: ${JSON.stringify(user, null, 2)}`)
+      console.log(`user starting credit: ${user.credit}`)
 
       // Get the BCH balance of the users BCH address.
       // const balance = await _this.bchjs.Blockbook.balance(user.bchAddr)
       const fulcrumBalance = await _this.bchjs.Electrumx.balance(user.bchAddr)
-      const balance = fulcrumBalance.balance.confirmed + fulcrumBalance.balance.unconfirmed
+      const balance =
+        fulcrumBalance.balance.confirmed + fulcrumBalance.balance.unconfirmed
       // console.log(`balance: ${JSON.stringify(balance, null, 2)}`)
 
       // let totalBalance =
@@ -323,15 +334,12 @@ class ApiTokenController {
 
       // Calculate the amount of credit.
       const newCredit = bchPrice * totalBalance
+      const oldCredit = user.credit
 
       user.credit = user.credit + newCredit
 
-      // Update the user data in the DB.
-      try {
-        await user.save()
-      } catch (err) {
-        ctx.throw(422, err.message)
-      }
+      // round to the nearest cent.
+      user.credit = _this.bchUtil.util.round2(user.credit)
 
       // Execute some code here to sweep funds from the users address into the
       // company wallet.
@@ -344,14 +352,31 @@ class ApiTokenController {
         wlogger.error('Failed to sweep user funds to burn address: ', err)
       }
 
-      // Attempt to send an email, but don't let errors disrupt the flow of
-      // this function.
-      try {
-        await _this._sendEmail(txid)
-        wlogger.info(`Tokens burned, Email sent for txid: ${txid}`)
-      } catch (err) {
-        wlogger.error(`Failed to send email for txid: ${txid}`, err)
+      // Only update user model or send the email if the transaction succeeded.
+      // This can happen if this API endpoint is called twice rapidly, and
+      // the indexer hasn't had a chance to update its state.
+      if (txid) {
+        // Update the user data in the DB.
+        try {
+          await user.save()
+        } catch (err) {
+          ctx.throw(422, err.message)
+        }
+
+        // Attempt to send an email, but don't let errors disrupt the flow of
+        // this function.
+        try {
+          await _this._sendEmail(txid)
+          wlogger.info(`Tokens burned, Email sent for txid: ${txid}`)
+        } catch (err) {
+          wlogger.error(`Failed to send email for txid: ${txid}`, err)
+        }
+      } else {
+        console.log('Error processing transaction. Original user credit used.')
+        user.credit = oldCredit
       }
+
+      console.log(`user ending credit: ${user.credit}`)
 
       // Return the updated credit.
       ctx.body = user.credit
