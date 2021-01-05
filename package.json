@@ -34,7 +34,7 @@
   "dependencies": {
     "@psf/bch-js": "3.10.3",
     "apidoc": "^0.23.0",
-    "axios": "^0.19.2",
+    "axios": "^0.21.1",
     "bch-util": "^1.2.3",
     "bcryptjs": "^2.4.3",
     "glob": "^7.0.0",
