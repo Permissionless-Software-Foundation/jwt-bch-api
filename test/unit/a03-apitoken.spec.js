@@ -638,17 +638,12 @@ describe('API Token', () => {
 
     it('should return same credit if BCH balance is zero', async () => {
       // Mock live network calls.
-      sandbox.stub(apiTokenController.bchjs.Blockbook, 'balance').resolves({
-        page: 1,
-        totalPages: 1,
-        itemsOnPage: 1000,
-        address: context.testUser.bchAddr,
-        balance: '0',
-        totalReceived: '0',
-        totalSent: '0',
-        unconfirmedBalance: '0',
-        unconfirmedTxs: 0,
-        txs: 0
+      sandbox.stub(apiTokenController.bchjs.Electrumx, 'balance').resolves({
+        success: true,
+        balance: {
+          confirmed: 0,
+          unconfirmed: 0
+        }
       })
 
       const id = context.testUser.id
@@ -673,21 +668,20 @@ describe('API Token', () => {
 
     it('should return new credit if BCH is deposited', async () => {
       // Mock live network calls.
-      sandbox.stub(apiTokenController.bchjs.Blockbook, 'balance').resolves({
-        page: 1,
-        totalPages: 1,
-        itemsOnPage: 1000,
-        address: context.testUser.bchAddr,
-        balance: '0',
-        totalReceived: '0',
-        totalSent: '0',
-        unconfirmedBalance: '10000000',
-        unconfirmedTxs: 0,
-        txs: 0
+      sandbox.stub(apiTokenController.bchjs.Electrumx, 'balance').resolves({
+        success: true,
+        balance: {
+          confirmed: 0,
+          unconfirmed: 10000000
+        }
       })
       sandbox.stub(apiTokenController.bchjs.Price, 'current').resolves(21665)
-      sandbox.stub(apiTokenController.bch, 'queueTransaction').resolves('0f333b474ecab740e78bd6ab1160c790a0fd935727d22c35e8da67e71733911d')
-      sandbox.stub(apiTokenController.nodemailer, 'sendEmail').resolves({ })
+      sandbox
+        .stub(apiTokenController.bch, 'queueTransaction')
+        .resolves(
+          '0f333b474ecab740e78bd6ab1160c790a0fd935727d22c35e8da67e71733911d'
+        )
+      sandbox.stub(apiTokenController.nodemailer, 'sendEmail').resolves({})
 
       const id = context.testUser.id
       const token = context.testUser.token
