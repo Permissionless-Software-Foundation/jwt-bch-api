@@ -7,7 +7,7 @@ const wlogger = require('../../lib/wlogger')
 const GetAddress = require('slp-cli-wallet/src/commands/get-address')
 const getAddress = new GetAddress()
 
-const walletFilename = `${__dirname}/../../../config/wallet.json`
+const walletFilename = `${__dirname.toString()}/../../../config/wallet.json`
 // const validator = require('koa-validate').Validator
 
 let _this

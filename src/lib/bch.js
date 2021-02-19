@@ -30,7 +30,7 @@ if (config.env === 'test') {
   }
 } else {
   // Open wallet file for development or production.
-  walletInfo = require(`${__dirname}/../../config/wallet.json`)
+  walletInfo = require(`${__dirname.toString()}/../../config/wallet.json`)
 }
 
 // Instantiate the bch-js library.
@@ -176,7 +176,7 @@ class BCH {
 
       // Calulate the original amount in the wallet and add all UTXOs to the
       // transaction builder.
-      for (var i = 0; i < utxos.length; i++) {
+      for (let i = 0; i < utxos.length; i++) {
         const utxo = utxos[i]
 
         originalAmount = originalAmount + utxo.value
