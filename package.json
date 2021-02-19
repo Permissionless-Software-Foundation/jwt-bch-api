@@ -33,7 +33,6 @@
   "repository": "Permissionless-Software-Foundation/jwt-bch-api",
   "dependencies": {
     "@psf/bch-js": "4.15.0",
-    "apidoc": "^0.23.0",
     "axios": "^0.21.1",
     "bch-util": "^1.2.3",
     "bcryptjs": "^2.4.3",
