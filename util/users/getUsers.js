@@ -13,7 +13,8 @@ async function getUsers () {
     { useNewUrlParser: true, useUnifiedTopology: true }
   )
 
-  const users = await User.find({}, '-password')
+  // const users = await User.find({}, '-password')
+  const users = await User.find({})
   console.log(`users: ${JSON.stringify(users, null, 2)}`)
 
   mongoose.connection.close()
