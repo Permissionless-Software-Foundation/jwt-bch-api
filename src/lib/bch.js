@@ -30,11 +30,11 @@ if (config.env === 'test') {
   }
 } else {
   // Open wallet file for development or production.
-  walletInfo = require(`${__dirname}/../../config/wallet.json`)
+  walletInfo = require(`${__dirname.toString()}/../../config/wallet.json`)
 }
 
 // Instantiate the bch-js library.
-const BCHJS = require('@chris.troutner/bch-js')
+const BCHJS = require('@psf/bch-js')
 const bchjs = new BCHJS()
 
 let _this
@@ -58,12 +58,15 @@ class BCH {
       // console.log(`bchAddr: ${bchAddr}`)
 
       // Get balance for address from Blockbook
-      const addrInfo = await this.bchjs.Blockbook.balance(bchAddr)
+      // const addrInfo = await this.bchjs.Blockbook.balance(bchAddr)
+      const fulcrumBalance = await _this.bchjs.Electrumx.balance(bchAddr)
       // console.log(`addrInfo: ${JSON.stringify(addrInfo, null, 2)}`)
 
       // Calculate the spot-balance
+      // const balance =
+      //   Number(addrInfo.balance) + Number(addrInfo.unconfirmedBalance)
       const balance =
-        Number(addrInfo.balance) + Number(addrInfo.unconfirmedBalance)
+        fulcrumBalance.balance.confirmed + fulcrumBalance.balance.unconfirmed
       // console.log(`balance: ${JSON.stringify(balance, null, 2)}`)
 
       return balance
@@ -82,10 +85,11 @@ class BCH {
       // console.log(`bchAddr: ${bchAddr}`)
 
       // Get balance for address from Blockbook
-      const utxos = await this.bchjs.Blockbook.utxo(bchAddr)
+      // const utxos = await this.bchjs.Blockbook.utxo(bchAddr)
+      const utxos = await this.bchjs.Electrumx.utxo(bchAddr)
       // console.log(`utxos: ${JSON.stringify(utxos, null, 2)}`)
 
-      return utxos
+      return utxos.utxos
     } catch (err) {
       console.error('Error in bch.js/getUtxos()')
       throw err
@@ -136,14 +140,14 @@ class BCH {
   async isValidUtxo (utxo) {
     try {
       // Input validation.
-      if (!utxo.txid) throw new Error('utxo does not have a txid property')
-      if (!utxo.vout && utxo.vout !== 0) {
-        throw new Error('utxo does not have a vout property')
+      if (!utxo.tx_hash) throw new Error('utxo does not have a tx_hash property')
+      if (!utxo.tx_pos && utxo.tx_pos !== 0) {
+        throw new Error('utxo does not have a tx_pos property')
       }
 
       // console.log(`utxo: ${JSON.stringify(utxo, null, 2)}`)
 
-      const txout = await this.bchjs.Blockchain.getTxOut(utxo.txid, utxo.vout)
+      const txout = await this.bchjs.Blockchain.getTxOut(utxo.tx_hash, utxo.tx_pos)
       // console.log(`txout: ${JSON.stringify(txout, null, 2)}`)
 
       if (txout === null) return false
@@ -172,12 +176,12 @@ class BCH {
 
       // Calulate the original amount in the wallet and add all UTXOs to the
       // transaction builder.
-      for (var i = 0; i < utxos.length; i++) {
+      for (let i = 0; i < utxos.length; i++) {
         const utxo = utxos[i]
 
-        originalAmount = originalAmount + utxo.satoshis
+        originalAmount = originalAmount + utxo.value
 
-        transactionBuilder.addInput(utxo.txid, utxo.vout)
+        transactionBuilder.addInput(utxo.tx_hash, utxo.tx_pos)
       }
 
       if (originalAmount < 1) {
@@ -228,7 +232,7 @@ class BCH {
           keyPair,
           redeemScript,
           transactionBuilder.hashTypes.SIGHASH_ALL,
-          utxo.satoshis
+          utxo.value
         )
       }
 

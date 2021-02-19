@@ -5,7 +5,7 @@
 const config = require('../../config')
 const jsonUtils = require('./utils/json-files')
 
-const walletFilename = `${__dirname}/../../config/wallet.json`
+const walletFilename = `${__dirname.toString()}/../../config/wallet.json`
 
 async function createWallet () {
   let walletInfo

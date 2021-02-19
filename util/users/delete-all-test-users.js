@@ -2,6 +2,7 @@ const mongoose = require('mongoose')
 
 // Force test environment
 process.env.AUTH_ENV = 'test'
+// process.env.AUTH_ENV = 'development'
 const config = require('../../config')
 
 const User = require('../../src/models/users')

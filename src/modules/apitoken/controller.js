@@ -310,6 +310,7 @@ class ApiTokenController {
       // Get the BCH balance of the users BCH address.
       // const balance = await _this.bchjs.Blockbook.balance(user.bchAddr)
       const fulcrumBalance = await _this.bchjs.Electrumx.balance(user.bchAddr)
+      // console.log(`fulcrumBalance: ${JSON.stringify(fulcrumBalance, null, 2)}`)
       const balance =
         fulcrumBalance.balance.confirmed + fulcrumBalance.balance.unconfirmed
       // console.log(`balance: ${JSON.stringify(balance, null, 2)}`)
