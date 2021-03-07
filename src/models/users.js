@@ -24,7 +24,7 @@ const User = new mongoose.Schema({
   credit: { type: Number, default: 0 }, // account credit in USD.
 
   // Newer properties for finer-grained rate limits with bch-api
-  rpmLimit: { type: Number, default: 20 },
+  pointsToConsume: { type: Number, default: 50 },
   duration: { type: Number, default: 30 },
 
   email: {

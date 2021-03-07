@@ -110,9 +110,12 @@ class ApiTokenController {
       let newApiLevel = ctx.request.body.apiLevel
       console.log(`Requesting API level: ${newApiLevel}`)
 
-      let rpmLimit = Number(ctx.request.body.rpmLimit)
-      if (!rpmLimit) rpmLimit = 100 // Default value.
-      console.log(`Requesting RPM limit of: ${rpmLimit}`)
+      let pointsToConsume = Number(ctx.request.body.pointsToConsume)
+      if (!pointsToConsume) pointsToConsume = 10 // Default value.
+      console.log(`Points to consume: ${pointsToConsume}`)
+      console.log(
+        `RPM rate limit will be: ${Math.floor(1000 / pointsToConsume)}`
+      )
 
       let duration = ctx.request.body.duration
       if (!duration) duration = 30 // Default value
@@ -160,7 +163,7 @@ class ApiTokenController {
       user.apiLevel = newApiLevel
 
       // TODO: These properties need more control and tests
-      user.rpmLimit = rpmLimit
+      user.pointsToConsume = pointsToConsume
       user.duration = duration
 
       // Generate new JWT token.
