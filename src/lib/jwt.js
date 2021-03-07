@@ -55,6 +55,7 @@ class JwtUtils {
     }
   }
 
+  // Generate a new JWT token.
   generateToken (user, expTime) {
     try {
       // console.log(`user: ${JSON.stringify(user, null, 2)}`)
@@ -66,7 +67,9 @@ class JwtUtils {
       const jwtPayload = {
         id: user.id,
         apiLevel: user.apiLevel,
-        rateLimit: user.rateLimit
+        rateLimit: user.rateLimit,
+        rpmLimit: user.rpmLimit,
+        duration: user.duration
       }
 
       const token = _this.jwt.sign(jwtPayload, _this.config.tokenSecret, jwtOptions)

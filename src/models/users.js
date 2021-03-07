@@ -23,6 +23,10 @@ const User = new mongoose.Schema({
   satBal: { type: Number, default: 0 }, // balance of BCH in satoshis
   credit: { type: Number, default: 0 }, // account credit in USD.
 
+  // Newer properties for finer-grained rate limits with bch-api
+  rpmLimit: { type: Number, default: 20 },
+  duration: { type: Number, default: 30 },
+
   email: {
     type: String,
     required: true,

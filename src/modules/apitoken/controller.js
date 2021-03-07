@@ -85,9 +85,19 @@ class ApiTokenController {
    * @apiGroup API Token
    *
    * @apiDescription This endpoint is used to request a new JWT token for accessing
-   * the Cash Stack API. This endpoint will automatically calculate a refund and
+   * bch-api. This endpoint will automatically calculate a refund and
    * credit the account for an old JWT token, *before* issuing a new JWT token
    * and debiting the account for the new JWT token.
+   *
+   * CT 3/7/21: Not yet implemented
+   * Body parameters:
+   * - apiLevel: 0 or 40, to signal legacy teir (free or paid)
+   * - rpmLimit: 100, 250, or 600
+   *   - Must have apiLevel set to 40.
+   * - duration: The value for the expiration data of the JWT token.
+   *   - 10: 24 hours
+   *   - 20: 1 week
+   *   - 30: 1 month (default)
    */
   // Request a new API JWT token.
   async newToken (ctx, next) {
@@ -99,6 +109,14 @@ class ApiTokenController {
       // console.log(`ctx.request.body: ${JSON.stringify(ctx.request.body, null, 2)}`)
       let newApiLevel = ctx.request.body.apiLevel
       console.log(`Requesting API level: ${newApiLevel}`)
+
+      let rpmLimit = Number(ctx.request.body.rpmLimit)
+      if (!rpmLimit) rpmLimit = 100 // Default value.
+      console.log(`Requesting RPM limit of: ${rpmLimit}`)
+
+      let duration = ctx.request.body.duration
+      if (!duration) duration = 30 // Default value
+      console.log(`JWT duration tier: ${duration}`)
 
       // Throw error if apiLevel is not included.
       if ((newApiLevel !== 0 && !newApiLevel) || isNaN(newApiLevel)) {
@@ -140,6 +158,10 @@ class ApiTokenController {
       // Set the new API level
       // Dev note: this must be done before generating a new token.
       user.apiLevel = newApiLevel
+
+      // TODO: These properties need more control and tests
+      user.rpmLimit = rpmLimit
+      user.duration = duration
 
       // Generate new JWT token.
       const token = apiTokenLib.generateToken(user)

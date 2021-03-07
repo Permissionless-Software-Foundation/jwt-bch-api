@@ -10,7 +10,7 @@
     "lint": "standard --env mocha --fix",
     "docs": "./node_modules/.bin/apidoc -i src/ -o docs",
     "coverage": "nyc report --reporter=text-lcov | coveralls",
-    "coverage:report": "nyc --reporter=html mocha --exit",
+    "coverage:report": "export AUTH_ENV=test && npm run prep-test && nyc --reporter=html mocha --exit test/unit/",
     "prep-test": "node util/users/delete-all-test-users.js && cp ./config/bkup-wallet.json ./config/wallet.json"
   },
   "keywords": [
@@ -32,7 +32,7 @@
   },
   "repository": "Permissionless-Software-Foundation/jwt-bch-api",
   "dependencies": {
-    "@psf/bch-js": "4.15.0",
+    "@psf/bch-js": "4.16.0",
     "axios": "^0.21.1",
     "bch-util": "^1.2.3",
     "bcryptjs": "^2.4.3",
@@ -70,7 +70,7 @@
     "husky": "^4.3.8",
     "mocha": "^8.2.1",
     "nyc": "^15.1.0",
-    "semantic-release": "^17.3.7",
+    "semantic-release": "^17.4.0",
     "sinon": "^9.2.4",
     "standard": "^16.0.3"
   },
