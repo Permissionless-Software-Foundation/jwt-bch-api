@@ -68,7 +68,7 @@ class JwtUtils {
         id: user.id,
         apiLevel: user.apiLevel,
         rateLimit: user.rateLimit,
-        rpmLimit: user.rpmLimit,
+        pointsToConsume: user.pointsToConsume,
         duration: user.duration
       }
 

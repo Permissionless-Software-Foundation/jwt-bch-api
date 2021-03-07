@@ -20,7 +20,9 @@ function generateToken (user) {
     id: user.id,
     email: user.email,
     apiLevel: user.apiLevel,
-    rateLimit: user.rateLimit
+    rateLimit: user.rateLimit,
+    pointsToConsume: user.pointsToConsume,
+    duration: user.duration
   }
 
   const token = jwt.sign(jwtPayload, config.tokenSecret, jwtOptions)
