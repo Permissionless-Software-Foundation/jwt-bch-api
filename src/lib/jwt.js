@@ -55,6 +55,7 @@ class JwtUtils {
     }
   }
 
+  // Generate a new JWT token.
   generateToken (user, expTime) {
     try {
       // console.log(`user: ${JSON.stringify(user, null, 2)}`)
