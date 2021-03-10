@@ -146,14 +146,16 @@ class ApiTokenController {
         user.credit += refund
       }
 
+      const apiTokenPrice = _this._getTokenPrice(user.apiLevel)
+
       // Check against balance.
-      if (user.credit < _this.config.apiTokenPrice) {
+      if (user.credit < apiTokenPrice) {
         ctx.throw(402, 'Not enough credit')
       }
 
       // Deduct credit for the new token.
       if (newApiLevel > 10) {
-        user.credit = user.credit - _this.config.apiTokenPrice
+        user.credit = user.credit - apiTokenPrice
 
         // Round to the nearest cent
         user.credit = _this.bchUtil.util.round2(user.credit)
@@ -205,6 +207,27 @@ class ApiTokenController {
     }
   }
 
+  _getTokenPrice (apiLevel) {
+    // Default
+    let apiTokenPrice = 9.99
+
+    switch (apiLevel) {
+      case 40:
+        apiTokenPrice = 9.99
+        break
+      case 50:
+        apiTokenPrice = 19.99
+        break
+      case 60:
+        apiTokenPrice = 29.99
+        break
+      default:
+        apiTokenPrice = 9.99
+    }
+
+    return apiTokenPrice
+  }
+
   // Calculates the refund, to be credited before generating a new JWT token.
   _calculateRefund (user) {
     try {
@@ -231,20 +254,7 @@ class ApiTokenController {
       diff = diff / (1000 * 60 * 60 * 24) // Convert to days.
       // console.log(`Time left: ${diff} days`)
 
-      let apiTokenPrice = _this.config.apiTokenPrice // Default value
-      switch (user.apiLevel) {
-        case 40:
-          apiTokenPrice = 9.99
-          break
-        case 50:
-          apiTokenPrice = 19.99
-          break
-        case 60:
-          apiTokenPrice = 29.99
-          break
-        default:
-          apiTokenPrice = 9.99
-      }
+      const apiTokenPrice = _this._getTokenPrice(user.apiLevel)
 
       let refund = (diff / 30) * apiTokenPrice
 
