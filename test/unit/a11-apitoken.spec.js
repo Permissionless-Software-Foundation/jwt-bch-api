@@ -592,7 +592,7 @@ describe('API Token', () => {
       // console.log(`result: ${JSON.stringify(result, null, 2)}`)
 
       assert.isBelow(result, 20)
-      assert.isAbove(result, 10)
+      assert.isAbove(result, 9)
     })
   })
 

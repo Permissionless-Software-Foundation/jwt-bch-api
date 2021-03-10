@@ -18,5 +18,5 @@ module.exports = {
   logPass: 'test',
 
   // Price in USD for a bch-js JWT token for 1 month.
-  apiTokenPrice: process.env.TOKENPRICE ? process.env.TOKENPRICE : 14.99
+  apiTokenPrice: process.env.TOKENPRICE ? process.env.TOKENPRICE : 9.99
 }

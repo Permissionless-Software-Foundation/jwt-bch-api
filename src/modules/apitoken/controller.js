@@ -106,15 +106,17 @@ class ApiTokenController {
     // 40 = Full Access ($14.99)
     // TODO: Add 20% discount if paid in BCHA or PSF tokens.
     try {
-      // console.log(`ctx.request.body: ${JSON.stringify(ctx.request.body, null, 2)}`)
+      console.log(
+        `ctx.request.body: ${JSON.stringify(ctx.request.body, null, 2)}`
+      )
       let newApiLevel = ctx.request.body.apiLevel
       console.log(`Requesting API level: ${newApiLevel}`)
 
       let pointsToConsume = Number(ctx.request.body.pointsToConsume)
-      if (!pointsToConsume) pointsToConsume = 10 // Default value.
+      if (!pointsToConsume) pointsToConsume = 100 // Default value.
       console.log(`Points to consume: ${pointsToConsume}`)
       console.log(
-        `RPM rate limit will be: ${Math.floor(1000 / pointsToConsume)}`
+        `RPM rate limit will be: ${Math.floor(10000 / pointsToConsume)}`
       )
 
       let duration = ctx.request.body.duration
@@ -229,7 +231,22 @@ class ApiTokenController {
       diff = diff / (1000 * 60 * 60 * 24) // Convert to days.
       // console.log(`Time left: ${diff} days`)
 
-      let refund = (diff / 30) * _this.config.apiTokenPrice
+      let apiTokenPrice = _this.config.apiTokenPrice // Default value
+      switch (user.apiLevel) {
+        case 40:
+          apiTokenPrice = 9.99
+          break
+        case 50:
+          apiTokenPrice = 19.99
+          break
+        case 60:
+          apiTokenPrice = 29.99
+          break
+        default:
+          apiTokenPrice = 9.99
+      }
+
+      let refund = (diff / 30) * apiTokenPrice
 
       // Handle negative amounts.
       if (refund < 0) refund = 0
