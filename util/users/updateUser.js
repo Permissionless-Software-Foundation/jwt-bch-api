@@ -11,7 +11,7 @@ const config = require('../../config')
 
 const User = require('../../src/models/users')
 
-const USEREMAIL = 'someone@gmail.com'
+const USEREMAIL = 'new123@test.com'
 
 async function updateUser () {
   try {
