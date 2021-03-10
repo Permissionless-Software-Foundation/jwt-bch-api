@@ -146,7 +146,8 @@ class ApiTokenController {
         user.credit += refund
       }
 
-      const apiTokenPrice = _this._getTokenPrice(user.apiLevel)
+      const apiTokenPrice = _this._getTokenPrice(newApiLevel)
+      console.log(`apiTokenPrice: ${apiTokenPrice}`)
 
       // Check against balance.
       if (user.credit < apiTokenPrice) {
@@ -208,6 +209,8 @@ class ApiTokenController {
   }
 
   _getTokenPrice (apiLevel) {
+    console.log(`apiLevel: ${apiLevel}`)
+
     // Default
     let apiTokenPrice = 9.99
 
