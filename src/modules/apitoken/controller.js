@@ -1,41 +1,41 @@
 // Public npm libraries.
-const jwt = require('jsonwebtoken')
-const BchUtil = require('bch-util')
+const jwt = require("jsonwebtoken");
+const BchUtil = require("bch-util");
 
 // Local libraries.
-const User = require('../../models/users')
-const apiTokenLib = require('../../lib/api-token')
-const config = require('../../../config')
+const User = require("../../models/users");
+const apiTokenLib = require("../../lib/api-token");
+const config = require("../../../config");
 
-const JwtLib = require('../../lib/jwt')
-const jwtLib = new JwtLib()
+const JwtLib = require("../../lib/jwt");
+const jwtLib = new JwtLib();
 
-const wlogger = require('../../lib/wlogger')
+const wlogger = require("../../lib/wlogger");
 
 // Business logic library for dealing with BCH.
-const BCH = require('../../lib/bch')
-const bch = new BCH()
+const BCH = require("../../lib/bch");
+const bch = new BCH();
 
-const BCHJS = require('@psf/bch-js')
+const BCHJS = require("@psf/bch-js");
 
 // This app is intended to run on the same machine as the mainnet bch-api REST API.
-const bchjs = new BCHJS({ restURL: config.apiServer, apiToken: config.apiJwt })
+const bchjs = new BCHJS({ restURL: config.apiServer, apiToken: config.apiJwt });
 
-const NodeMailer = require('../../lib/nodemailer')
-const nodemailer = new NodeMailer()
+const NodeMailer = require("../../lib/nodemailer");
+const nodemailer = new NodeMailer();
 
-let _this
+let _this;
 
 class ApiTokenController {
-  constructor () {
-    this.bchjs = bchjs
-    this.bch = bch
-    this.jwtLib = jwtLib
-    this.nodemailer = nodemailer
-    this.config = config
-    this.bchUtil = new BchUtil({ bchjs: this.bchjs })
+  constructor() {
+    this.bchjs = bchjs;
+    this.bch = bch;
+    this.jwtLib = jwtLib;
+    this.nodemailer = nodemailer;
+    this.config = config;
+    this.bchUtil = new BchUtil({ bchjs: this.bchjs });
 
-    _this = this
+    _this = this;
   }
 
   /**
@@ -51,30 +51,30 @@ class ApiTokenController {
    */
   //
   // Given a user GUID, return the BCH payment address for that user.
-  async getBchAddr (ctx, next) {
+  async getBchAddr(ctx, next) {
     try {
       // Get user data
-      const user = await User.findById(ctx.params.id, '-password')
+      const user = await User.findById(ctx.params.id, "-password");
       if (!user) {
-        ctx.throw(404)
+        ctx.throw(404);
       }
       // wlogger.error(`user: ${JSON.stringify(user, null, 2)}`)
 
       // Return the BCH address
       ctx.body = {
         bchAddr: user.bchAddr
-      }
+      };
     } catch (err) {
-      if (err === 404 || err.name === 'CastError') {
-        ctx.throw(404)
+      if (err === 404 || err.name === "CastError") {
+        ctx.throw(404);
       }
 
-      wlogger.error('Error in apitoken/controller.js/getBchAddr()', err)
-      ctx.throw(500)
+      wlogger.error("Error in apitoken/controller.js/getBchAddr()", err);
+      ctx.throw(500);
     }
 
     if (next) {
-      return next()
+      return next();
     }
   }
 
@@ -100,7 +100,7 @@ class ApiTokenController {
    *   - 30: 1 month (default)
    */
   // Request a new API JWT token.
-  async newToken (ctx, next) {
+  async newToken(ctx, next) {
     // Assumed values:
     // 0 = anonymous
     // 40 = Full Access ($14.99)
@@ -108,85 +108,85 @@ class ApiTokenController {
     try {
       console.log(
         `ctx.request.body: ${JSON.stringify(ctx.request.body, null, 2)}`
-      )
-      let newApiLevel = ctx.request.body.apiLevel
-      console.log(`Requesting API level: ${newApiLevel}`)
+      );
+      let newApiLevel = ctx.request.body.apiLevel;
+      console.log(`Requesting API level: ${newApiLevel}`);
 
-      let pointsToConsume = Number(ctx.request.body.pointsToConsume)
-      if (!pointsToConsume) pointsToConsume = 100 // Default value.
-      console.log(`Points to consume: ${pointsToConsume}`)
+      let pointsToConsume = Number(ctx.request.body.pointsToConsume);
+      if (!pointsToConsume) pointsToConsume = 100; // Default value.
+      console.log(`Points to consume: ${pointsToConsume}`);
       console.log(
         `RPM rate limit will be: ${Math.floor(10000 / pointsToConsume)}`
-      )
+      );
 
-      let duration = ctx.request.body.duration
-      if (!duration) duration = 30 // Default value
-      console.log(`JWT duration tier: ${duration}`)
+      let duration = ctx.request.body.duration;
+      if (!duration) duration = 30; // Default value
+      console.log(`JWT duration tier: ${duration}`);
 
       // Throw error if apiLevel is not included.
       if ((newApiLevel !== 0 && !newApiLevel) || isNaN(newApiLevel)) {
-        ctx.throw(422, 'apiLevel must be an integer number')
+        ctx.throw(422, "apiLevel must be an integer number");
       }
 
       // Force newApiLevel to be an integer.
-      newApiLevel = Math.round(newApiLevel)
+      newApiLevel = Math.round(newApiLevel);
 
       // Get user data
-      const user = ctx.state.user
+      const user = ctx.state.user;
       // console.log(`user: ${JSON.stringify(user, null, 2)}`)
       // console.log(`old credit: ${user.credit}`)
 
       // If the user already has a JWT token, calculate a refund for the time
       // they've paid for.
       if (user.apiLevel > 10) {
-        const refund = _this._calculateRefund(user)
+        const refund = _this._calculateRefund(user);
 
-        console.log(`refund: ${refund}`)
+        console.log(`refund: ${refund}`);
 
-        user.credit += refund
+        user.credit += refund;
       }
 
-      const apiTokenPrice = _this._getTokenPrice(newApiLevel)
-      console.log(`apiTokenPrice: ${apiTokenPrice}`)
+      const apiTokenPrice = _this._getTokenPrice(newApiLevel);
+      console.log(`apiTokenPrice: ${apiTokenPrice}`);
 
       // Check against balance.
       if (user.credit < apiTokenPrice) {
-        ctx.throw(402, 'Not enough credit')
+        ctx.throw(402, "Not enough credit");
       }
 
       // Deduct credit for the new token.
       if (newApiLevel > 10) {
-        user.credit = user.credit - apiTokenPrice
+        user.credit = user.credit - apiTokenPrice;
 
         // Round to the nearest cent
-        user.credit = _this.bchUtil.util.round2(user.credit)
+        user.credit = _this.bchUtil.util.round2(user.credit);
       }
-      console.log(`user.credit after new token: ${user.credit}`)
+      console.log(`user.credit after new token: ${user.credit}`);
 
       // Set the new API level
       // Dev note: this must be done before generating a new token.
-      user.apiLevel = newApiLevel
+      user.apiLevel = newApiLevel;
 
       // TODO: These properties need more control and tests
-      user.pointsToConsume = pointsToConsume
-      user.duration = duration
+      user.pointsToConsume = pointsToConsume;
+      user.duration = duration;
 
       // Generate new JWT token.
-      const token = apiTokenLib.generateToken(user)
+      const token = apiTokenLib.generateToken(user);
       // console.log(`token: ${token}`)
 
-      const tokenExp = jwtLib.getExpiration(token)
+      const tokenExp = jwtLib.getExpiration(token);
 
       // Update the user model in the DB with the new token.
-      user.apiToken = token
-      user.apiTokenExp = tokenExp
+      user.apiToken = token;
+      user.apiTokenExp = tokenExp;
 
       // Update the user data in the DB.
       try {
         // console.log(`new user data: ${JSON.stringify(user, null, 2)}`)
-        await user.save()
+        await user.save();
       } catch (err) {
-        ctx.throw(422, err.message)
+        ctx.throw(422, err.message);
       }
 
       // Return the BCH address
@@ -195,84 +195,84 @@ class ApiTokenController {
         apiTokenExp: tokenExp,
         apiLevel: newApiLevel,
         credit: user.credit
-      }
+      };
     } catch (err) {
-      if (err.status) ctx.throw(err.status, err.message)
+      if (err.status) ctx.throw(err.status, err.message);
 
-      wlogger.error('Error in apitoken/controller.js/newToken()', err)
-      ctx.throw(500)
+      wlogger.error("Error in apitoken/controller.js/newToken()", err);
+      ctx.throw(500);
     }
 
     if (next) {
-      return next()
+      return next();
     }
   }
 
-  _getTokenPrice (apiLevel) {
-    console.log(`apiLevel: ${apiLevel}`)
+  _getTokenPrice(apiLevel) {
+    console.log(`apiLevel: ${apiLevel}`);
 
     // Default
-    let apiTokenPrice = 9.99
+    let apiTokenPrice = 9.99;
 
     switch (apiLevel) {
       case 40:
-        apiTokenPrice = 9.99
-        break
+        apiTokenPrice = 9.99;
+        break;
       case 50:
-        apiTokenPrice = 19.99
-        break
+        apiTokenPrice = 19.99;
+        break;
       case 60:
-        apiTokenPrice = 29.99
-        break
+        apiTokenPrice = 29.99;
+        break;
       default:
-        apiTokenPrice = 9.99
+        apiTokenPrice = 9.99;
     }
 
-    return apiTokenPrice
+    return apiTokenPrice;
   }
 
   // Calculates the refund, to be credited before generating a new JWT token.
-  _calculateRefund (user) {
+  _calculateRefund(user) {
     try {
       // console.log(`user: ${JSON.stringify(user, null, 2)}`)
 
       // Refund 0 if existing JWT token was free.
-      const oldApiLevel = user.apiLevel
+      const oldApiLevel = user.apiLevel;
       if (oldApiLevel < 11) {
-        return 0
+        return 0;
       }
 
-      const decoded = jwt.decode(user.apiToken)
+      const decoded = jwt.decode(user.apiToken);
       // console.log(`decoded: ${JSON.stringify(decoded, null, 2)}`)
 
       // Expiration date recorded in the JWT token.
-      const exp = decoded.exp
+      const exp = decoded.exp;
 
-      let now = new Date()
-      now = now / 1000
+      let now = new Date();
+      now = now / 1000;
 
       // Calculate the time difference in days.
-      let diff = exp - now
-      diff = diff * 1000 // Convert back to JS Date.
-      diff = diff / (1000 * 60 * 60 * 24) // Convert to days.
+      let diff = exp - now;
+      diff = diff * 1000; // Convert back to JS Date.
+      diff = diff / (1000 * 60 * 60 * 24); // Convert to days.
       // console.log(`Time left: ${diff} days`)
 
-      const apiTokenPrice = _this._getTokenPrice(user.apiLevel)
+      const apiTokenPrice = _this._getTokenPrice(user.apiLevel);
 
-      let refund = (diff / 30) * apiTokenPrice
+      let refund = (diff / 30) * apiTokenPrice;
 
       // Handle negative amounts.
-      if (refund < 0) refund = 0
+      if (refund < 0) refund = 0;
 
       // Round to the nearest cent.
-      refund = this.bchUtil.util.round2(refund)
+      refund = this.bchUtil.util.round2(refund);
 
-      wlogger.info(`refunding ${refund} dollars`)
+      wlogger.info(`refunding ${refund} dollars`);
 
-      return refund
+      return refund;
     } catch (err) {
-      console.error('Error in apiToken controller.js/_calculateRefund()')
-      throw err
+      console.error("Error in apiToken controller.js/_calculateRefund()");
+      throw err;
     }
   }
 
@@ -287,56 +287,56 @@ class ApiTokenController {
    * rate limits.
    */
   // Expects an API JWT token as input and returns true or false if it's valid.
-  async isValid (ctx, next) {
+  async isValid(ctx, next) {
     // false by default.
     const outObj = {
       isValid: false,
       apiLevel: 0
-    }
+    };
 
     try {
-      const token = ctx.request.body.token
+      const token = ctx.request.body.token;
       // console.log(`token: ${token}`)
 
-      if (!token) throw new Error('Token could not be found in POST body.')
+      if (!token) throw new Error("Token could not be found in POST body.");
 
       // Validate the JWT token.
-      const decoded = jwt.verify(token, config.tokenSecret)
+      const decoded = jwt.verify(token, config.tokenSecret);
       // console.log(`decoded: ${JSON.stringify(decoded, null, 2)}`)
 
       // Get user data
-      const user = await User.findById(decoded.id, '-password')
+      const user = await User.findById(decoded.id, "-password");
       if (!user) {
-        ctx.throw(404)
+        ctx.throw(404);
       }
       // console.log(`user: ${JSON.stringify(user, null, 2)}`)
 
       // If the provided JWT does match what's in the user model, then the
       // provided JWT has been replaced and is no longer valid.
       if (user.apiToken !== token) {
-        ctx.body = outObj
-        return
+        ctx.body = outObj;
+        return;
       }
 
       // If an error was not thrown, then the token is valid.
-      outObj.isValid = true
-      outObj.apiLevel = user.apiLevel
+      outObj.isValid = true;
+      outObj.apiLevel = user.apiLevel;
 
       wlogger.debug(
         `valid: true, apiLevel: ${outObj.apiLevel}, JWT: ${token.slice(
           -6
         )}, user: ${user.username}`
-      )
+      );
 
-      ctx.body = outObj
+      ctx.body = outObj;
     } catch (err) {
-      wlogger.debug('Error in apitoken/isValid(). Returning false.')
+      wlogger.debug("Error in apitoken/isValid(). Returning false.");
       // If any error is thrown, return false, indicating the JWT token is invalid.
-      ctx.body = outObj
+      ctx.body = outObj;
     }
 
     if (next) {
-      return next()
+      return next();
     }
   }
 
@@ -351,61 +351,62 @@ class ApiTokenController {
    * balance. If a balance is found, the BCH is moved to the company wallet and
    * the user account is credited with the market-value of BCH in USD.
    */
-  async updateCredit (ctx, next) {
+  async updateCredit(ctx, next) {
     try {
       // Get user data
-      const user = await User.findById(ctx.params.id, '-password')
+      const user = await User.findById(ctx.params.id, "-password");
       if (!user) {
-        ctx.throw(404)
+        ctx.throw(404);
       }
 
       // console.log(`user: ${JSON.stringify(user, null, 2)}`)
-      console.log(`user starting credit: ${user.credit}`)
+      console.log(`user starting credit: ${user.credit}`);
 
       // Get the BCH balance of the users BCH address.
       // const balance = await _this.bchjs.Blockbook.balance(user.bchAddr)
-      const fulcrumBalance = await _this.bchjs.Electrumx.balance(user.bchAddr)
-      // console.log(`fulcrumBalance: ${JSON.stringify(fulcrumBalance, null, 2)}`)
+      const fulcrumBalance = await _this.bchjs.Electrumx.balance(user.bchAddr);
+      console.log(`fulcrumBalance: ${JSON.stringify(fulcrumBalance, null, 2)}`);
       const balance =
-        fulcrumBalance.balance.confirmed + fulcrumBalance.balance.unconfirmed
-      // console.log(`balance: ${JSON.stringify(balance, null, 2)}`)
+        fulcrumBalance.balance.confirmed + fulcrumBalance.balance.unconfirmed;
+      console.log(`balance: ${JSON.stringify(balance, null, 2)}`);
 
       // let totalBalance =
       //   Number(balance.balance) + Number(balance.unconfirmedBalance)
-      let totalBalance = balance
+      let totalBalance = balance;
 
       // Return existing credit if totalBalance is zero.
       if (totalBalance === 0) {
-        ctx.body = user.credit
-        return
+        console.log("totalBalance is zero. Returning zero credit.");
+        ctx.body = user.credit;
+        return;
       }
 
       // Convert the balance from satoshis to BCH
-      totalBalance = _this.bchjs.BitcoinCash.toBitcoinCash(totalBalance)
+      totalBalance = _this.bchjs.BitcoinCash.toBitcoinCash(totalBalance);
 
       // Get the price of BCH in USD
-      const bchPrice = await _this.bchjs.Price.getUsd()
+      const bchPrice = await _this.bchjs.Price.getUsd();
       // bchPrice = bchPrice / 100
-      console.log(`price: ${bchPrice}`)
+      console.log(`price: ${bchPrice}`);
 
       // Calculate the amount of credit.
-      const newCredit = bchPrice * totalBalance
-      const oldCredit = user.credit
+      const newCredit = bchPrice * totalBalance;
+      const oldCredit = user.credit;
 
-      user.credit = user.credit + newCredit
+      user.credit = user.credit + newCredit;
 
       // round to the nearest cent.
-      user.credit = _this.bchUtil.util.round2(user.credit)
+      user.credit = _this.bchUtil.util.round2(user.credit);
 
       // Execute some code here to sweep funds from the users address into the
       // company wallet.
       // Don't let errors disrupt the UX, by using a try/catch.
-      let txid = ''
+      let txid = "";
       try {
-        txid = await _this.bch.queueTransaction(user.hdIndex)
-        wlogger.info(`Fund successfully swept. TXID: ${txid}`)
+        txid = await _this.bch.queueTransaction(user.hdIndex);
+        wlogger.info(`Fund successfully swept. TXID: ${txid}`);
       } catch (err) {
-        wlogger.error('Failed to sweep user funds to burn address: ', err)
+        wlogger.error("Failed to sweep user funds to burn address: ", err);
       }
 
       // Only update user model or send the email if the transaction succeeded.
@@ -414,68 +415,69 @@ class ApiTokenController {
       if (txid) {
         // Update the user data in the DB.
         try {
-          await user.save()
+          await user.save();
         } catch (err) {
-          ctx.throw(422, err.message)
+          ctx.throw(422, err.message);
         }
 
         // Attempt to send an email, but don't let errors disrupt the flow of
         // this function.
         try {
-          await _this._sendEmail(txid)
-          wlogger.info(`Tokens burned, Email sent for txid: ${txid}`)
+          await _this._sendEmail(txid);
+          wlogger.info(`Tokens burned, Email sent for txid: ${txid}`);
         } catch (err) {
-          wlogger.error(`Failed to send email for txid: ${txid}`, err)
+          wlogger.error(`Failed to send email for txid: ${txid}`, err);
         }
       } else {
-        console.log('Error processing transaction. Original user credit used.')
-        user.credit = oldCredit
+        console.log("Error processing transaction. Original user credit used.");
+        user.credit = oldCredit;
       }
 
-      console.log(`user ending credit: ${user.credit}`)
+      console.log(`user ending credit: ${user.credit}`);
 
       // Return the updated credit.
-      ctx.body = user.credit
+      ctx.body = user.credit;
     } catch (err) {
-      if (err.messsage && err.message.indexOf('No utxos found') > -1) {
+      console.log("Error in updateCredit()...");
+      if (err.messsage && err.message.indexOf("No utxos found") > -1) {
         ctx.throw(
           409,
-          'UTXO not found. Try again in a minute or send additional BCH.'
-        )
+          "UTXO not found. Try again in a minute or send additional BCH."
+        );
       }
 
-      if (err === 404 || err.name === 'CastError') {
-        ctx.throw(404)
+      if (err === 404 || err.name === "CastError") {
+        ctx.throw(404);
       }
 
-      wlogger.error('Error in apitoken/controller.js/updateCredit()', err)
-      ctx.throw(500, 'Wait a couple minutes before trying again.')
+      wlogger.error("Error in apitoken/controller.js/updateCredit()", err);
+      ctx.throw(500, "Wait a couple minutes before trying again.");
     }
 
     if (next) {
-      return next()
+      return next();
     }
   }
 
-  async _sendEmail (txid) {
+  async _sendEmail(txid) {
     try {
       const msg = `
       PSF tokens burned from FullStack user. TXID:
       <a href="https://explorer.bitcoin.com/bch/tx/${txid}">${txid}</a>
-      `
+      `;
 
       // Send email notification
       const data = {
         formMessage: msg,
-        subject: 'Tokens burned',
+        subject: "Tokens burned",
         email: config.emailLogin,
         to: [config.emailLogin]
-      }
+      };
 
-      await _this.nodemailer.sendEmail(data)
+      await _this.nodemailer.sendEmail(data);
     } catch (err) {
-      wlogger.error('Error in apitoken/controller.js/_sendEmail().')
-      throw err
+      wlogger.error("Error in apitoken/controller.js/_sendEmail().");
+      throw err;
     }
   }
 
@@ -501,35 +503,35 @@ class ApiTokenController {
    * console.log(response.data.apiToken)
    * // "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjVlMzEwNTBjMzdjMGQyM2MwZmIxYjFiYyIsImlhdCI6MTU4MDI3MjI1NiwiZXhwIjoxNTgyODY0MjU2fQ.E4je3pFpp1PRgTyKQ-HK1KIsrBLCXm8OhrHXwewl2Ak"
    */
-  async getExistingToken (ctx, next) {
+  async getExistingToken(ctx, next) {
     try {
       // Get user data
-      const user = ctx.state.user
+      const user = ctx.state.user;
       // console.log(`user: ${JSON.stringify(user, null, 2)}`)
 
       // If user has not yet generated an API token.
       if (!user.apiToken) {
         ctx.body = {
           apiToken: false
-        }
+        };
 
         // Normal path
       } else {
         ctx.body = {
           apiToken: user.apiToken
-        }
+        };
       }
     } catch (err) {
-      if (err.status) ctx.throw(err.status, err.message)
+      if (err.status) ctx.throw(err.status, err.message);
 
-      wlogger.error('Error in apitoken/controller.js/getExistingToken()', err)
-      ctx.throw(500)
+      wlogger.error("Error in apitoken/controller.js/getExistingToken()", err);
+      ctx.throw(500);
     }
 
     if (next) {
-      return next()
+      return next();
     }
   }
 }
 
-module.exports = ApiTokenController
+module.exports = ApiTokenController;
