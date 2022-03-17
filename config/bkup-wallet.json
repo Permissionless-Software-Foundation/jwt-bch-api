@@ -1,0 +1,23 @@
+{
+  "network": "mainnet",
+  "mnemonic": "position buyer right brown museum cage hair wild verb spy evidence name",
+  "derivation": 245,
+  "rootAddress": "bitcoincash:qp07xjgjdh9e9hw2xc24qjvag7nuxr5vdv42x789ww",
+  "balance": 0,
+  "nextAddress": 3,
+  "hasBalance": [],
+  "addresses": [
+    [
+      0,
+      "bitcoincash:qp07xjgjdh9e9hw2xc24qjvag7nuxr5vdv42x789ww"
+    ],
+    [
+      1,
+      "bitcoincash:qz77t9w4a9xkwr9rqst3fng9v9xh7kfjpcgrrhpsgn"
+    ],
+    [
+      2,
+      "bitcoincash:qqqeqp3ewsp53yu4s7yspfyqt6wy25wkju76hpndxv"
+    ]
+  ]
+}
