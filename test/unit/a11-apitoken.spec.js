@@ -675,7 +675,7 @@ describe('API Token', () => {
           unconfirmed: 10000000
         }
       })
-      sandbox.stub(apiTokenController.bchjs.Price, 'current').resolves(21665)
+      sandbox.stub(apiTokenController.bchjs.Price, 'getUsd').resolves(21665)
       sandbox
         .stub(apiTokenController.bch, 'queueTransaction')
         .resolves(
