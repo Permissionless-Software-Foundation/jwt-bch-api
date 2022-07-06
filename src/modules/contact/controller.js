@@ -39,6 +39,8 @@ class Contact {
         throw new Error("Property 'payloadTitle' must be a string!")
       }
 
+      emailObj.subject = emailObj.subject || 'Email from jwt-bch-api'
+
       // If an email list exists, the email will be sended to that list
       // otherwhise will be sended by default to the variable "_this.config.emailUser"
       let _to = [_this.config.emailUser]
@@ -57,7 +59,7 @@ class Contact {
 
       console.log(`Trying send message to : ${_to}`)
 
-      emailObj.subject = 'Someone wants to share a document with you.'
+      // emailObj.subject = 'Someone wants to share a document with you.'
       emailObj.to = _to
 
       await _this.nodemailer.sendEmail(emailObj)
