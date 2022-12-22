@@ -37,7 +37,7 @@
     "bch-util": "1.2.5",
     "bcryptjs": "^2.4.3",
     "glob": "^7.1.6",
-    "jsonwebtoken": "^8.5.1",
+    "jsonwebtoken": "^9.0.0",
     "kcors": "^2.2.2",
     "koa": "^2.13.1",
     "koa-bodyparser": "^4.3.0",
